@@ -3,7 +3,7 @@ import {Button, Text, TextInput, View, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AuthContext} from '../utils/Context'
 
-export function SignInScreen() {
+export function SignInScreen({navigation}) {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
   
@@ -26,6 +26,7 @@ export function SignInScreen() {
           style={txtInput}
         />
         <Button title="Sign in" onPress={() => signIn({ username, password })} />
+        <Button title="Register" onPress={() => navigation.navigate('Register')} />
       </View>
     );
   }

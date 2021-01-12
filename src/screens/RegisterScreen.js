@@ -8,7 +8,7 @@ const usersRef = firestore().collection('Users');
 
 
 
-export default class Registration extends Component {
+export  class RegisterScreen extends Component {
 
   componentDidMount() {
     console.log(this.state.userData);
@@ -82,10 +82,16 @@ export default class Registration extends Component {
     .then(res => {
       this.storeToken(JSON.stringify(res.user));
     })
-      .then(usersRef.add({
+      usersRef.add({
         Name: this.state.Name,
         Email: this.state.email
-      }).then(() =>{console.log("User added!")}))
+      })
+      .then(this.setState({
+          email: "",
+          password: ""
+      }))
+      {console.log("User added!")}
+      this.props.navigation.navigate('SignIn')
     }
 
     // usersRef.add({
