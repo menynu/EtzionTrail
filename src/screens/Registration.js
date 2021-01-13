@@ -3,12 +3,12 @@ import {AsyncStorage, StyleSheet, Text, TextInput, TouchableOpacity, View} from 
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-
+import {AuthContext} from '../utils/Context'
 const usersRef = firestore().collection('Users');
 
 
 
-export default class Registration extends Component {
+export class Registration extends Component {
 
   componentDidMount() {
     console.log(this.state.userData);
@@ -54,38 +54,61 @@ export default class Registration extends Component {
       this.setState(state);
     }
   
-    Register(Email,Password) {
+    async Register(Email,Password) {
       if (Email === "" || Password === "" )
         alert("נא למלא את כל הפרטים")
     
     else {
-      auth()  // Make the email&pass unique in Firebase Authentication
-      .createUserWithEmailAndPassword(Email, Password)
-      .then(() => {
-        console.log('User account created & signed in!');
-      })
-      .catch(error => {
-        if (error.code === 'auth/email-already-in-use') {
-          console.log('That email address is already in use!');
-        }
+      try {
+        let res = await auth().createUserWithEmailAndPassword(Email, Password)
+        if (res) {
+          console.log( "?", res)
+          
+            this.setState({ userData: JSON.stringify( res.user) });
+            this.storeToken(JSON.stringify(res.user));        
+            console.log(this.state.userData);
+            alert(res.user.uid)
+            usersRef.add({
+              Name: this.state.Name,
+              Email: this.state.email})
+            this.props.navigation.navigate('SignIn' , res)
+            
 
-        if (error.code === 'auth/invalid-email') {
-          console.log('That email address is invalid!');
         }
+      } catch (e) {
+        console.error(e.message)
+      }
+      
+      
 
-        console.error(error);
-      })
-      .then(res => {
-        this.setState({ userData: JSON.stringify( res.user) });        
-        console.log(this.state.userData);
-    })
-    .then(res => {
-      this.storeToken(JSON.stringify(res.user));
-    })
-      .then(usersRef.add({
-        Name: this.state.Name,
-        Email: this.state.email
-      }).then(() =>{console.log("User added!")}))
+
+
+    //   auth().createUserWithEmailAndPassword(Email, Password)
+    //   .then(() => {
+    //     console.log('User account created & signed in!');
+    //   })
+    //   .catch(error => {
+    //     if (error.code === 'auth/email-already-in-use') {
+    //       console.log('That email address is already in use!');
+    //     }
+
+    //     if (error.code === 'auth/invalid-email') {
+    //       console.log('That email address is invalid!');
+    //     }
+
+    //     console.error(error);
+    //   })
+    //   .then(res => {
+    //     this.setState({ userData: JSON.stringify( res.user) });        
+    //     console.log(this.state.userData);
+    // })
+    // .then(res => {
+    //   this.storeToken(JSON.stringify(res.user));
+    // })
+    //   .then(usersRef.add({
+    //     Name: this.state.Name,
+    //     Email: this.state.email
+    //   }).then(() =>{console.log("User added!")}))
     }
 
     // usersRef.add({

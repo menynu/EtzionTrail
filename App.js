@@ -1,65 +1,36 @@
-// import React from 'react';
-// import {
-// 	ActivityIndicator,
-// 	Text,
-// 	View,
-// 	StatusBar,
-// 	StyleSheet,
-// } from 'react-native';
-// import { NavigationContainer } from '@react-navigation/native';
-// import { createStackNavigator } from '@react-navigation/stack';
-// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import HomeScreen from './screens/HomeScreen';
-// import LoginScreen from './screens/LoginScreen';
-// import Registration from './screens/Registration';
-
-// const Stack = createStackNavigator();
-// const Tab = createBottomTabNavigator();
-
-// export default function App() {
-// 	return (
-// 		<NavigationContainer>
-// 			<Tab.Navigator >
-//       <Tab.Screen name="HomeScreen" component={HomeScreen} />
-// 			<Tab.Screen name="LoginScreen" component={LoginScreen} />
-// 				<Tab.Screen name="Registration" component={Registration} />
-// 			</Tab.Navigator>
-// 		</NavigationContainer>
-// 	);
-// }
-
-// const styles= StyleSheet.create({
-// 	container: {
-// 	  flex: 1,
-// 	  justifyContent: 'center',
-// 	  alignItems: 'center',
-// 	  backgroundColor: '#1e90ff',
-// 	},
-	
-//   })
-
-
 import * as React from 'react';
-import {SplashScreen, SignInScreen, ProfileScreen, RegisterScreen} from './src/screens'
+import {SplashScreen, SignInScreen, SignUpScreen, ProfileScreen, RegisterScreen, HomeScreen , Registration} from './src/screens'
 import { ActivityIndicator, Button, Text, TextInput, View,AsyncStorage} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 // import {AsyncStorage} from '@react-native-async-storage/async-storage'
 import {AuthContext} from './src/utils/Context';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 
 const Stack = createStackNavigator();
 const StackAuth = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 function AuthStack() {
   return (
     <StackAuth.Navigator initialRouteName="SignIn">
       <StackAuth.Screen name="SignIn" component={SignInScreen} />
-      <StackAuth.Screen name="Register" component={RegisterScreen} />
+      <StackAuth.Screen name="Register" component={Registration} />
     </StackAuth.Navigator>
   );
 }
-
+function RootStack() {
+	return (
+		<NavigationContainer>
+			<Tab.Navigator >
+		       <Tab.Screen name="HomeScreen" component={HomeScreen} />
+				<Tab.Screen name="Profile" component={ProfileScreen} />
+				{/* <Tab.Screen name="Registration" component={Registration} /> */}
+			</Tab.Navigator>
+		</NavigationContainer>
+	);
+  }
 
 
 
@@ -146,13 +117,15 @@ export default function App({ navigation }) {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Tab.Navigator screenOptions={{headerShown: false}}>
           {state.isLoading ? (
             // We haven't finished checking for the token yet
-            <Stack.Screen name="Splash" component={SplashScreen} />
+            <Tab.Screen name="Splash" component={SplashScreen} />
           ) : state.userToken == null ? (
-            // No token found, user isn't signed in
-            <Stack.Screen
+            <>
+            {/* // No token found, user isn't signed in */}
+         
+            <Tab.Screen
               name="SignIn"
               component={AuthStack}
               options={{
@@ -161,11 +134,34 @@ export default function App({ navigation }) {
                 animationTypeForReplace: state.isSignout ? 'pop' : 'push',
               }}
             />
+               <Tab.Screen
+              name="HomeScreen"
+              component={HomeScreen}
+              options={{
+                title: 'Home Screen',
+                // When logging out, a pop animation feels intuitive
+                
+              }}
+            />
+            </>
+            
           ) : (
             // User is signed in
-            <Stack.Screen name="Home" component={ProfileScreen} />
+            <>
+            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen
+              name="HomeScreen"
+              component={HomeScreen}
+              options={{
+                title: 'Home Screen',
+                // When logging out, a pop animation feels intuitive
+                
+              }}
+            />  
+            </>
+
           )}
-        </Stack.Navigator>
+        </Tab.Navigator>
       </NavigationContainer>
     </AuthContext.Provider>
   );
