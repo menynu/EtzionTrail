@@ -1,14 +1,15 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import * as React from 'react';
-import {SplashScreen, SignInScreen, SignUpScreen, ProfileScreen, RegisterScreen, HomeScreen , Registration} from './src/screens'
-import { ActivityIndicator, Button, Text, TextInput, View,AsyncStorage} from 'react-native';
+import {SplashScreen, SignInScreen, ProfileScreen, RegisterScreen, HomeScreen , Registration, TrailScreen} from './src/screens'
+// import {AsyncStorage} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-// import {AsyncStorage} from '@react-native-async-storage/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {AuthContext} from './src/utils/Context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 
-const Stack = createStackNavigator();
+// const Stack = createStackNavigator();
 const StackAuth = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -24,7 +25,7 @@ function RootStack() {
 	return (
 		<NavigationContainer>
 			<Tab.Navigator >
-		       <Tab.Screen name="HomeScreen" component={HomeScreen} />
+		    <Tab.Screen name="HomeScreen" component={HomeScreen} />
 				<Tab.Screen name="Profile" component={ProfileScreen} />
 				{/* <Tab.Screen name="Registration" component={Registration} /> */}
 			</Tab.Navigator>
@@ -35,18 +36,43 @@ function RootStack() {
 
 
 export default function App({ navigation }) {
+  const [userData, setUserData] = React.useState([])
+
+  const readData = async () => {
+    // console.log('data === ')
+    try {
+      const data = await AsyncStorage.getItem('userData')
+      let _data = JSON.parse(JSON.parse(data));
+      console.log('data === ', _data.email)
+      if (data !== null) {
+        setUserData(data)
+      }
+    } catch (e) {
+      alert('Failed to fetch the data from storage')
+    }
+  }
+  React.useEffect(() => {
+    console.log('HEHE')
+    readData()
+  }, [])
   const [state, dispatch] = React.useReducer(
+    
     (prevState, action) => {
+      // readData()
       switch (action.type) {
         case 'RESTORE_TOKEN':
+          console.log('user token for signed in: ', action.token)
+          // console.log('AFTER: ',this.state.userData);
           return {
             ...prevState,
             userToken: action.token,
             isLoading: false,
+            
           };
         case 'SIGN_IN':
 			if (action.token) {
-				AsyncStorage.setItem('userToken',action.token)
+        AsyncStorage.setItem('userToken',action.token)
+        console.log('user token for signed in: ', action.token)
 			}
           return {
             ...prevState,
@@ -143,16 +169,19 @@ export default function App({ navigation }) {
                 
               }}
             />
+            <Tab.Screen name="Trails" component={TrailScreen} />
             </>
             
           ) : (
             // User is signed in
             <>
-            <Tab.Screen name="Profile" component={ProfileScreen} />
-            <Tab.Screen
-              name="HomeScreen"
-              component={HomeScreen}
-              options={{
+            {console.log('auth context: ', authContext)}
+              <Tab.Screen name="Trails" component={TrailScreen} />
+              <Tab.Screen name="Profile" component={ProfileScreen} />
+              <Tab.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
                 title: 'Home Screen',
                 // When logging out, a pop animation feels intuitive
                 

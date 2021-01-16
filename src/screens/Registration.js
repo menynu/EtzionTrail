@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {AsyncStorage, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import {AuthContext} from '../utils/Context'
@@ -11,7 +11,7 @@ const usersRef = firestore().collection('Users');
 export class Registration extends Component {
 
   componentDidMount() {
-    console.log(this.state.userData);
+    console.log('this is the user dataaaaa: ',  this.state.userData);
     this.getToken();
  }
 
@@ -26,6 +26,7 @@ export class Registration extends Component {
 
 
     async storeToken(user) {
+      console.log('set user register: ', user)
       try {
          await AsyncStorage.setItem("userData", JSON.stringify(user));
       } catch (error) {
@@ -33,6 +34,7 @@ export class Registration extends Component {
       }
     }
     async getToken(user) {
+      console.log('did we get here to get tokens?')
       try {
         let userData = await AsyncStorage.getItem("userData");
         let data = JSON.parse(userData);
@@ -78,43 +80,7 @@ export class Registration extends Component {
       } catch (e) {
         console.error(e.message)
       }
-      
-      
-
-
-
-    //   auth().createUserWithEmailAndPassword(Email, Password)
-    //   .then(() => {
-    //     console.log('User account created & signed in!');
-    //   })
-    //   .catch(error => {
-    //     if (error.code === 'auth/email-already-in-use') {
-    //       console.log('That email address is already in use!');
-    //     }
-
-    //     if (error.code === 'auth/invalid-email') {
-    //       console.log('That email address is invalid!');
-    //     }
-
-    //     console.error(error);
-    //   })
-    //   .then(res => {
-    //     this.setState({ userData: JSON.stringify( res.user) });        
-    //     console.log(this.state.userData);
-    // })
-    // .then(res => {
-    //   this.storeToken(JSON.stringify(res.user));
-    // })
-    //   .then(usersRef.add({
-    //     Name: this.state.Name,
-    //     Email: this.state.email
-    //   }).then(() =>{console.log("User added!")}))
     }
-
-    // usersRef.add({
-    //   Name: this.state.Name,
-    //   Email: this.state.email
-    // }).then(() =>{console.log("User added!")})
   }
   
 

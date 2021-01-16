@@ -1,52 +1,31 @@
 import * as React from 'react';
-import {Button, Text, TextInput, View, StyleSheet} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Button, TextInput, View, StyleSheet} from 'react-native';
 import {AuthContext} from '../utils/Context'
-import RegisterScreen from './RegisterScreen'
-import { createStackNavigator } from '@react-navigation/stack';
-import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-
-const StackAuth = createStackNavigator();
-// const StackRoot = createStackNavigator();
-
-// const { signIn } = React.useContext(AuthContext);
-function AuthStack() {
-  return (
-    <StackAuth.Navigator initialRouteName="SignIn">
-      <StackAuth.Screen name="SignIn" component={SignInScreen} />
-      <StackAuth.Screen name="Register" component={RegisterScreen} />
-    </StackAuth.Navigator>
-  );
-}
-
-
-
-const doSignIn = async (email, password) => {
-  // const  { signIn }  = React.useContext(AuthContext);
-  try {
-    let response = await auth().signInWithEmailAndPassword(email, password)
-    if (response && response.user) {
-      alert("Success Authenticated successfully")
-  
-
-    }
-  } catch (e) {
-    console.error(e.message)
-  }
-  // signIn({ email, password })
-}
-
 
 
 export function SignInScreen({navigation}) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const  { signIn }  = React.useContext(AuthContext);
-
-   
+    const  { signIn }  = React.useContext(AuthContext); 
     const {container, txtInput} = styles;
   
+    const doSignIn = async (email, password) => {
+    
+      try {
+        let response = await auth().signInWithEmailAndPassword(email, password)
+        if (response && response.user) {
+          alert("Success Authenticated successfully")
+          signIn('Token', response.user.uid)
+    
+        }
+      } catch (e) {
+        console.error(e.message)
+      }
+      // signIn({ email, password })
+    }
+
+
     return (
       <View style={container}>
         <TextInput 
@@ -62,7 +41,7 @@ export function SignInScreen({navigation}) {
           secureTextEntry
           style={txtInput}
         />
-        <Button title="Sign in" onPress={() => {
+      <Button title="Sign in" onPress={() => {
            //signIn({ username, password })
           doSignIn(email,password)
           
