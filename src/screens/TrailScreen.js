@@ -1,61 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import {View, Text, FlatList, StyleSheet, ActivityIndicator, Image } from 'react-native';
+// import { ScrollView } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 import auth, { firebase } from "@react-native-firebase/auth"
-
-
+import storage from '@react-native-firebase/storage';
+import {Card} from '../components/Card'
 export function TrailScreen() {
 
     const {containerStyle,txtInput} = styles;
     const [loading, setLoading] = useState(true); // Set loading to true on component mount
     const [trails, setTrails] = useState([]); // Initial empty array of trails
     const [users, setUsers] = useState([]);
+
     useEffect(() => {
         console.log('This first use effect ')
         const user = firebase.auth().currentUser;
-
+        
+        
         if (user) {
-        console.log('User email: ', user.email);
+        // console.log('User email: ', user.email);
         }
         const subscriber = firestore()
           .collection('Trails')
           .onSnapshot(querySnapshot => {
             const trails = [];
-            
-            // querySnapshot.forEach(documentSnapshot => {
-            //   trails.push({
-            //     ...documentSnapshot.data(),
-            //     key: documentSnapshot.id,
-            //   });
-            // //   console.log("test", documentSnapshot)
+            querySnapshot.forEach(async documentSnapshot => {
+              trails.push({
+                ...documentSnapshot.data(),
+                key: documentSnapshot.id,
+
+              });
+               console.log("trails test", trails)
               
-            // });
+            });
+
             
             setTrails(trails);
             setLoading(false);
           });
-
-        //   const subscriber2 = firestore()
-        //   .collection('Users')
-        //   .onSnapshot(querySnapshot => {
-        //     const users = [];
-      
-        //     querySnapshot.forEach(documentSnapshot => {
-              
-        //         users.push({
-        //         ...documentSnapshot.data(),
-        //         key: documentSnapshot.id,
-        //       });
-        //     //   console.log("test", documentSnapshot)
-        //     console.log('user data: ', documentSnapshot.data())
-        //     });
-            
-        //     setUsers(users);
-        //     setLoading(false);
-        //   });
-          
-        // Unsubscribe from events when no longer in use
         return () => {subscriber()};
       }, []);
   
@@ -63,36 +45,27 @@ export function TrailScreen() {
       return <ActivityIndicator />;
     }
 
-
-
-
     return (
-        <ScrollView>
+
+        <View>
+   
+           <Text style={{textAlign: 'center', fontSize: 18}}>מסלולים</Text>
              <FlatList
                 data={trails}
-                renderItem={({ item }) => (
-                    <View style={{ height: 50, flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text>User ID: {item.info}</Text>
-                    <Text>User Name: {item.name}</Text>
-                   
+                renderItem={({ item }) => ( 
+                  <Card>
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Image source = {{uri: item.imageUri}}
+                    style = {{ width: '90%', height: 200}}
+                    />   
+                    <Text> {item.name}</Text>
+                    <Text style={{}}>פרטי השביל: {item.info} </Text>
                     </View>
+                    </Card>
                 )}
             />
-
-
-
-            <View style={containerStyle}>
-                <Text>Welcome to trail screen :-)</Text>
-            </View>
-            <View style={containerStyle}>
-                <Text>Welcome to trail2 screen :-)</Text>
-            </View>
-            <View style={containerStyle}>
-                <Text>Welcome to trail3 screen :-)</Text>
-            </View>
-        </ScrollView>
-      
-      
+      <View><Text style={{marginBottom: 5}}></Text></View>
+        </View>    
     );
   }
 
