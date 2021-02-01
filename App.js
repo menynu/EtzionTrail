@@ -7,6 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {AuthContext} from './src/utils/Context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import auth from '@react-native-firebase/auth';
 
 
 // const Stack = createStackNavigator();
@@ -36,32 +37,35 @@ function RootStack() {
 
 
 export default function App({ navigation }) {
-  const [userData, setUserData] = React.useState([])
+  // const [userData, setUserData] = React.useState([])
 
-  const readData = async () => {
-    // console.log('data === ')
-    try {
-      const data = await AsyncStorage.getItem('userData')
-      let _data = JSON.parse(JSON.parse(data));
-      console.log('data === ', _data.email)
-      if (data !== null) {
-        setUserData(data)
-      }
-    } catch (e) {
-      alert('Failed to fetch the data from storage')
-    }
-  }
-  React.useEffect(() => {
-    console.log('HEHE')
-    readData()
-  }, [])
+
+
+//this test for restart token:
+  // const readData = async () => {
+  //   try {
+  //     const data = await AsyncStorage.getItem('userData')
+  //     let _data = JSON.parse(data);
+  //     console.log('data === ', _data.email)
+  //     console.log('auth is:', auth().currentUser)
+  //     if (data !== null) {
+  //       setUserData(data)
+  //     }
+  //   } catch (e) {
+  //     alert('Failed to fetch the data from storage')
+  //   }
+  // }
+  // React.useEffect(() => {
+  //   // console.log('HEHE')
+  //   readData()
+  // }, [])
   const [state, dispatch] = React.useReducer(
     
     (prevState, action) => {
       // readData()
       switch (action.type) {
         case 'RESTORE_TOKEN':
-          console.log('user token for signed in: ', action.token)
+          console.log('user token for restore token: ', action.token)
           // console.log('AFTER: ',this.state.userData);
           return {
             ...prevState,
@@ -80,11 +84,14 @@ export default function App({ navigation }) {
             userToken: action.token,
           };
         case 'SIGN_OUT':
-		  AsyncStorage.removeItem('userToken')
+      // AsyncStorage.removeItem('userToken')
+      AsyncStorage.clear();
+      auth().signOut()
+      console.log('sign out remove token?: ', action.token)
           return {
             ...prevState,
             isSignout: true,
-            userToken: null,
+            userToken: null, 
           };
       }
     },
@@ -176,7 +183,7 @@ export default function App({ navigation }) {
             // User is signed in
             <>
             {console.log('auth context: ', authContext)}
-              <Tab.Screen name="Trails" component={TrailScreen} />
+              
               <Tab.Screen name="Profile" component={ProfileScreen} />
               <Tab.Screen
                 name="HomeScreen"
@@ -187,6 +194,7 @@ export default function App({ navigation }) {
                 
               }}
             />  
+            <Tab.Screen name="Trails" component={TrailScreen} />
             </>
 
           )}

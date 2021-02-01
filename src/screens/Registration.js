@@ -11,8 +11,9 @@ const usersRef = firestore().collection('Users');
 export class Registration extends Component {
 
   componentDidMount() {
-    console.log('this is the user dataaaaa: ',  this.state.userData);
+  
     this.getToken();
+      console.log('this is the user dataaaaa: ',  this.state.userData);
  }
 
   constructor(props) {
@@ -66,8 +67,8 @@ export class Registration extends Component {
         if (res) {
           console.log( "?", res)
           
-            this.setState({ userData: JSON.stringify( res.user) });
-            this.storeToken(JSON.stringify(res.user));        
+            this.setState({ userData: res.user});
+            this.storeToken(res.user);        
             console.log(this.state.userData);
             alert(res.user.uid)
             usersRef.add({

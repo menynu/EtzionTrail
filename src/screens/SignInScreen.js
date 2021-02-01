@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Button, TextInput, View, StyleSheet} from 'react-native';
 import {AuthContext} from '../utils/Context'
 import auth from '@react-native-firebase/auth';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function SignInScreen({navigation}) {
     const [email, setEmail] = React.useState('');
@@ -10,12 +10,28 @@ export function SignInScreen({navigation}) {
     const  { signIn }  = React.useContext(AuthContext); 
     const {container, txtInput} = styles;
   
+    const [userData, setUserData] = React.useState([]);
+
+    const setToken = async (user) => {
+      console.log('set user login!:: ', JSON.stringify(user))
+      try {
+         await AsyncStorage.setItem("userData", JSON.stringify(user));
+      } catch (error) {
+        console.log("Something went wrong", error);
+      }
+    }
+
+
     const doSignIn = async (email, password) => {
     
       try {
         let response = await auth().signInWithEmailAndPassword(email, password)
         if (response && response.user) {
           alert("Success Authenticated successfully")
+          console.log('after login: res data: ', response.user)
+          // setUserData(response.user)
+          setToken(response.user)
+          // console.log('user data: ', userData)
           signIn('Token', response.user.uid)
     
         }

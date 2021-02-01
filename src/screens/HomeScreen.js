@@ -26,7 +26,9 @@ const halfHeight = height / 2;
     super(props);
     this.state = {
         Trail: Trail1,
-        password: ""
+        password: "",
+        _latitude: 31.6600768,
+        _longitude: 35.1102883,
       };
     }
     handleTrail = text => {
@@ -42,7 +44,7 @@ const halfHeight = height / 2;
       //<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
        <View>
     
-        <Text>Home Screen</Text>
+        {/* <Text>Home Screen</Text> */}
      
 
         <View>
@@ -52,8 +54,8 @@ const halfHeight = height / 2;
         style={styles.map}
         mapType={"hybrid"}
         region={{
-        latitude: 31.6600768,
-        longitude: 35.1102883,
+        latitude: this.state._latitude,
+        longitude: this.state._longitude,
         latitudeDelta: 0.015,
         //longitudeDelta: 0.0121,
         longitudeDelta: 0.1  //set the distance view
@@ -67,23 +69,25 @@ const halfHeight = height / 2;
         />
     </MapView>
     </View>
-        <View style={{top:height/2}}>
-        <Text> test</Text>
+        <View style={{top:height-150}}>
+       
         <TouchableOpacity
-          onPress={() => this.handleTrail(Trail1)} >
-          <Text> Trail1 </Text>
+          onPress={() => {this.handleTrail(Trail1) , this.setState({_latitude: 31.6600768 }) , this.setState({longitude: 35.1102883})} } >
+          <Text> מסלול 1 </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => this.handleTrail(Trail2)} >
-          <Text> Trail2 </Text>
+          onPress={() => {this.handleTrail(Trail2)
+           this.state._latitude= 31.6601686
+            this.state._longitude= 35.1094347}} >
+          <Text> מסלול 2 </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => this.handleTrail(Trail3)} >
-          <Text> Trail3 </Text>
+          onPress={() => {this.handleTrail(Trail3), this.setState({_latitude: 31.5988057 }) , this.setState({longitude: 35.2161671})}} >
+          <Text> מסלול 3 </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => this.handleTrail(Trail4)} >
-          <Text> Trail4 </Text>
+          onPress={() => {this.handleTrail(Trail4), this.state._latitude= 31.606510558676, this.state._longitude= 35.219570128242 } }>
+          <Text> מסלול 4 </Text>
         </TouchableOpacity>
       </View>
       </View>
@@ -106,8 +110,8 @@ const styles = StyleSheet.create({
       ...StyleSheet.absoluteFillObject,
       position: 'absolute',
       //top: 50,
-      bottom: 50,
+      bottom: 70,
       width,
-      height: height/2
+      height: height-150
     },
    });
