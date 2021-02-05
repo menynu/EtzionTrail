@@ -1,7 +1,7 @@
 export * from './SplashScreen';
 export * from './ProfileScreen';
 export * from './SignInScreen';
-export * from './RegisterScreen';
+// export * from './RegisterScreen';
 export * from './HomeScreen';
 export * from './Registration'
 export * from './TrailScreen'

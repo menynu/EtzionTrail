@@ -7,65 +7,6 @@ import {AuthContext} from '../utils/Context'
 
 const usersRef = firestore().collection('Users');
 
-// const { register } = React.useContext(AuthContext);
-// const [username, setUsername] = React.useState('');
-// const [password, setPassword] = React.useState('');
-
- //const  signIn  = React.useContext(AuthContext);
-//  const  { signIn }  = React.useContext(AuthContext);
-// const data = {
-//   email: state.email,
-//   password: state.password
-// }
-// signIn(data)
-
-
-//  const CreateUser = async (email,password,navigation) => {
-//   try {
-//     let response = await auth().createUserWithEmailAndPassword(data.email, data.password)
-//     if (response) {
-//       console.log("test")
-//     }
-//   } catch (e) {
-//     console.error(e.message)
-//   }
-//  usersRef.add({
-//       // Name: this.state.Name,
-//        Email: email
-//       })
-//        navigation.navigate("SignIn")
-// }
-
-
-
-// const CreateUser = async (email, password) => {
-//   const [userID,setUID] = React.useState('');
-//   try {
-//     let response = await auth().createUserWithEmailAndPassword(email, password)
-//     if (response) {
-//       console.log( "?", response)
-//     }
-//   } catch (e) {
-//     console.error(e.message)
-//   }
-//   usersRef.add({
-//       // Name: this.state.Name,
-//        Email: email
-//       })
-//        //navigation.navigate("SignIn")
-       
-//       const applyUser = ({navigation}) =>
-//       {
-//         const  signIn  = React.useContext(AuthContext);
-        
-//       }
-
-// }
-const userCreated = (props) => (
-  
-  props.navigation.navigate('SignIn')
-
-)
 export function RegisterScreen({navigation}) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -91,16 +32,8 @@ export function RegisterScreen({navigation}) {
           })
            //navigation.navigate("SignIn")
            
-          const applyUser = ({navigation}) =>
-          {
-            const  signIn  = React.useContext(AuthContext);
-            
-          }
     
     }
-
-
-
 
     
     return (

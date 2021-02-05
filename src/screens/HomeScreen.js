@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {Dimensions, StyleSheet, Button, View, Text, TouchableOpacity} from 'react-native';
-import {Trail1, Trail2, Trail3 ,Trail4} from '../trails';
+import {Trail1, Trail2, Trail3 ,Trail4, area} from '../trails';
 
-import MapView, { PROVIDER_GOOGLE, Geojson} from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Geojson, Polygon} from 'react-native-maps';
 // import {AuthContext} from '../utils'
 
 const width = Dimensions.get('window').width
@@ -19,7 +19,6 @@ const halfHeight = height / 2;
     </MapView>
   );
 
-  //const trail2=trail;
 
   export class HomeScreen extends Component {
   constructor(props) {
@@ -29,19 +28,18 @@ const halfHeight = height / 2;
         password: "",
         _latitude: 31.6600768,
         _longitude: 35.1102883,
+
       };
     }
+
+
     handleTrail = text => {
       this.setState({ Trail: text });
     };
-    // handlePassword = text => {
-    //   this.setState({ password: text });
-    // };
-
-
+  
   render() {
     return (
-      //<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+     
        <View>
     
         {/* <Text>Home Screen</Text> */}
@@ -53,6 +51,8 @@ const halfHeight = height / 2;
         provider={PROVIDER_GOOGLE} 
         style={styles.map}
         mapType={"hybrid"}
+        showUserLocation
+        followUserLocation
         region={{
         latitude: this.state._latitude,
         longitude: this.state._longitude,
@@ -66,6 +66,12 @@ const halfHeight = height / 2;
         strokeColor="red"
         fillColor="green"
         strokeWidth={2}
+        />
+          <Geojson 
+        geojson={area} 
+        strokeColor="red"
+        fillColor= "#4d1427a5"
+        strokeWidth={1}
         />
     </MapView>
     </View>
