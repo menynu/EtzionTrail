@@ -21,4 +21,8 @@ target 'EtzionTrail' do
   #  post_install do |installer|
   #    flipper_post_install(installer)
   #  end
+  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+
+  pod 'react-native-location', :path => '../node_modules/react-native-location'
+
 end

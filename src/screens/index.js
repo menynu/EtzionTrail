@@ -5,6 +5,7 @@ export * from './SignInScreen';
 export * from './HomeScreen';
 export * from './Registration'
 export * from './TrailScreen'
+export * from './Map'
 // export * from '../components/Card'
 // export * from '../trails/trail1';
 // export * from '../trails/trail2';

@@ -1,7 +1,8 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import * as React from 'react';
-import {SplashScreen, SignInScreen, ProfileScreen, RegisterScreen, HomeScreen , Registration, TrailScreen} from './src/screens'
+import {SplashScreen, SignInScreen, ProfileScreen, HomeScreen , Registration, TrailScreen, Map} from './src/screens'
 // import {AsyncStorage} from 'react-native';
+// import Map from './src/screens'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -22,17 +23,17 @@ function AuthStack() {
     </StackAuth.Navigator>
   );
 }
-function RootStack() {
-	return (
-		<NavigationContainer>
-			<Tab.Navigator >
-		    <Tab.Screen name="HomeScreen" component={HomeScreen} />
-				<Tab.Screen name="Profile" component={ProfileScreen} />
-				{/* <Tab.Screen name="Registration" component={Registration} /> */}
-			</Tab.Navigator>
-		</NavigationContainer>
-	);
-  }
+// function RootStack() {
+// 	return (
+// 		<NavigationContainer>
+// 			<Tab.Navigator >
+// 		    <Tab.Screen name="HomeScreen" component={HomeScreen} />
+// 				<Tab.Screen name="Profile" component={ProfileScreen} />
+// 				{/* <Tab.Screen name="Registration" component={Registration} /> */}
+// 			</Tab.Navigator>
+// 		</NavigationContainer>
+// 	);
+//   }
 
 
 
@@ -184,7 +185,7 @@ export default function App({ navigation }) {
             <>
             {console.log('auth context: ', authContext)}
               
-              <Tab.Screen name="Profile" component={ProfileScreen} />
+              
               <Tab.Screen
                 name="HomeScreen"
                 component={HomeScreen}
@@ -194,6 +195,8 @@ export default function App({ navigation }) {
                 
               }}
             />  
+            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Map" component={Map} />
             <Tab.Screen name="Trails" component={TrailScreen} />
             </>
 

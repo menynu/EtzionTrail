@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import {AuthContext} from '../utils/Context'
+// import {AuthContext} from '../utils/Context'
 const usersRef = firestore().collection('Users');
 
 
@@ -34,7 +34,8 @@ export class Registration extends Component {
         console.log("Something went wrong", error);
       }
     }
-    async getToken(user) {
+
+    async getToken() {
       console.log('did we get here to get tokens?')
       try {
         let userData = await AsyncStorage.getItem("userData");
@@ -48,9 +49,11 @@ export class Registration extends Component {
     handleEmail = text => {
       this.setState({ email: text });
     };
+
     handlePassword = text => {
       this.setState({ password: text });
     };
+
     inputValueUpdate = (val, prop) => {
       const state = this.state;
       state[prop] = val;
@@ -74,7 +77,7 @@ export class Registration extends Component {
             usersRef.add({
               Name: this.state.Name,
               Email: this.state.email})
-            this.props.navigation.navigate('SignIn' , res)
+            this.navigation.navigate('SignIn' , res)
             
 
         }
