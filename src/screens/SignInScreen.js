@@ -31,6 +31,7 @@ export function SignInScreen({navigation}) {
           console.log('after login: res data: ', response.user)
           // setUserData(response.user)
           setToken(response.user)
+          AsyncStorage.setItem("userEmail",  response.user.email);
           // console.log('user data: ', userData)
           signIn('Token', response.user.uid)
     
@@ -63,7 +64,7 @@ export function SignInScreen({navigation}) {
           
 
           }} />
-        <Button title="Register" onPress={() => navigation.navigate('Register')} />
+        <Button title="Register" onPress={() => this.navigation.navigate('Register')} />
       </View>
     );
   }

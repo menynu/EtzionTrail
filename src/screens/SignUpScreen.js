@@ -1,9 +1,8 @@
 import * as React from 'react';
-import {Button, Text, TextInput, View, StyleSheet} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Button, TextInput, View, StyleSheet} from 'react-native';
 import {AuthContext} from '../utils/Context'
 import Register from './RegisterScreen'
-export function SignUpScreen({navigation}) {
+export function SignUpScreen() {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
   
@@ -26,7 +25,7 @@ export function SignUpScreen({navigation}) {
           style={txtInput}
         />
         <Button title="Sign in" onPress={() => signIn({ username, password })} />
-        <Button title="Register" onPress={() => this.props.navigation.navigate('RegisssterScreen')} />
+        <Button title="Register" onPress={() => this.props.navigation.navigate('Registration')} />
       </View>
     );
   }

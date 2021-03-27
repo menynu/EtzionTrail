@@ -1,6 +1,6 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 import * as React from 'react';
-import {SplashScreen, SignInScreen, ProfileScreen, HomeScreen , Registration, TrailScreen, Map} from './src/screens'
+import {SplashScreen, SignInScreen, ProfileScreen, HomeScreen , Registration, TrailScreen, Map, UploadScreen} from './src/screens'
 // import {AsyncStorage} from 'react-native';
 // import Map from './src/screens'
 import { NavigationContainer } from '@react-navigation/native';
@@ -9,11 +9,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {AuthContext} from './src/utils/Context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import auth from '@react-native-firebase/auth';
+// import UploadScreen from './src/screens/UploadScreen';
 
 
 // const Stack = createStackNavigator();
 const StackAuth = createStackNavigator();
 const Tab = createBottomTabNavigator();
+const StackMap = createStackNavigator();
 
 function AuthStack() {
   return (
@@ -23,17 +25,25 @@ function AuthStack() {
     </StackAuth.Navigator>
   );
 }
-// function RootStack() {
-// 	return (
-// 		<NavigationContainer>
-// 			<Tab.Navigator >
-// 		    <Tab.Screen name="HomeScreen" component={HomeScreen} />
-// 				<Tab.Screen name="Profile" component={ProfileScreen} />
-// 				{/* <Tab.Screen name="Registration" component={Registration} /> */}
-// 			</Tab.Navigator>
-// 		</NavigationContainer>
-// 	);
-//   }
+export function MapStack() {
+  return(
+    <StackMap.Navigator>
+      <StackMap.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+        options={{
+                  headerShown: false
+              }} />
+      <StackMap.Screen 
+        name="UploadScreen" 
+        component={UploadScreen} 
+        options={{
+          headerShown: false
+        }} />
+    </StackMap.Navigator>
+  )
+  
+}
 
 
 
@@ -57,7 +67,6 @@ export default function App({ navigation }) {
   //   }
   // }
   // React.useEffect(() => {
-  //   // console.log('HEHE')
   //   readData()
   // }, [])
   const [state, dispatch] = React.useReducer(
@@ -170,12 +179,8 @@ export default function App({ navigation }) {
             />
                <Tab.Screen
               name="HomeScreen"
-              component={HomeScreen}
-              options={{
-                title: 'Home Screen',
-                // When logging out, a pop animation feels intuitive
-                
-              }}
+              component={MapStack}
+              
             />
             <Tab.Screen name="Trails" component={TrailScreen} />
             </>
@@ -188,12 +193,7 @@ export default function App({ navigation }) {
               
               <Tab.Screen
                 name="HomeScreen"
-                component={HomeScreen}
-                options={{
-                title: 'Home Screen',
-                // When logging out, a pop animation feels intuitive
-                
-              }}
+                component={MapStack}
             />  
             <Tab.Screen name="Profile" component={ProfileScreen} />
             <Tab.Screen name="Map" component={Map} />

@@ -4,11 +4,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 
 
 export  function Map() {
-    useEffect(() => {
-        // setTimeout(()=> this.forceUpdate() (), 500);
-    })
  
-
     const [mapWidth, setMapWidth] = useState('99%')
 
     // Update map style to force a re-render to make sure the geolocation button appears
@@ -28,11 +24,12 @@ export  function Map() {
           showsScale = {true}
           provider={PROVIDER_GOOGLE}
           mapType='hybrid'
-          
+          showsIndoorLevelPicker
           customMapStyle={googleMapStyle}
           style={[styles.map, { width: mapWidth }]}
           showsUserLocation={true}
-        
+          onLongPress={console.log("test")}
+          
           showsBuildings = {true}
           showsPointsOfInterest={true}
           showsMyLocationButton={true}

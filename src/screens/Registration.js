@@ -71,7 +71,8 @@ export class Registration extends Component {
           console.log( "?", res)
           
             this.setState({ userData: res.user});
-            this.storeToken(res.user);        
+            this.storeToken(res.user);     
+            console.log('the res data user: ', res.user)   
             console.log(this.state.userData);
             alert(res.user.uid)
             usersRef.add({
