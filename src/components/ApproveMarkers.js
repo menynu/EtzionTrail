@@ -31,11 +31,7 @@ const ApproveMarkers =  (props) => {
                 });
                 // console.log("trails test", markers)
                 
-              });
-
-            
-             
-             
+              });     
               setMarkers(markers);
             // setLoading(false);
           });
