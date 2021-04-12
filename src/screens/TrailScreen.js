@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import {View, Text, FlatList, StyleSheet, ActivityIndicator, Image,TouchableOpacity } from 'react-native';
 // import { ScrollView } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
-import auth, { firebase } from "@react-native-firebase/auth"
-import storage from '@react-native-firebase/storage';
+import { firebase } from "@react-native-firebase/auth"
 import {Card} from '../components/Card'
-export function TrailScreen() {
+export function TrailScreen({navigation}) {
 
     const {containerStyle,txtInput} = styles;
     const [loading, setLoading] = useState(true); // Set loading to true on component mount
@@ -24,15 +23,16 @@ export function TrailScreen() {
           .collection('Trails')
           .onSnapshot(querySnapshot => {
             const trails = [];
-            querySnapshot.forEach(async documentSnapshot => {
-              trails.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
+            if (querySnapshot)
+              querySnapshot.forEach(async documentSnapshot => {
+                trails.push({
+                  ...documentSnapshot.data(),
+                  key: documentSnapshot.id,
 
+                });
+                console.log("trails test", trails)
+                
               });
-               console.log("trails test", trails)
-              
-            });
 
             
             setTrails(trails);
@@ -47,9 +47,9 @@ export function TrailScreen() {
 
     return (
 
-        <View>
+        <View  style={{marginBottom: 30}}>
    
-           <Text style={{textAlign: 'center', fontSize: 18}}>מסלולים</Text>
+           <Text style={{textAlign: 'center', fontSize: 18}}>מקטעים</Text>
              <FlatList
                 data={trails}
                 renderItem={({ item }) => ( 
@@ -59,7 +59,11 @@ export function TrailScreen() {
                     style = {{ width: '90%', height: 200}}
                     />   
                     <Text> {item.name}</Text>
-                    <Text style={{}}>פרטי השביל: {item.info} </Text>
+                    {console.log('item is: ', item)}
+                    {/* <Text style={{}}>פרטי השביל: {item.info} </Text> */}
+                    <TouchableOpacity onPress={()=> navigation.navigate('TrailInfo', {item})}>
+                      <Text> לפרטים נוספים</Text>
+                    </TouchableOpacity>
                     </View>
                     </Card>
                 )}

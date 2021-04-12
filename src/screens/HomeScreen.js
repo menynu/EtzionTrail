@@ -1,20 +1,20 @@
 /* eslint-disable react/prop-types */
-import React, { Component } from 'react';
-import {Dimensions, StyleSheet, View, Text, TouchableOpacity, Platform, ToastAndroid, Image} from 'react-native';
-import {Trail1, Trail2, Trail3 ,Trail4, area} from '../trails';
+import React from 'react';
+import {Dimensions, StyleSheet, View, LogBox , Text, TouchableOpacity, ToastAndroid, Image, PermissionsAndroid} from 'react-native';
+import BackgroundGeolocation from '@darron1217/react-native-background-geolocation';
+import {Trail1, Trail2, Trail3 ,Trail4} from '../trails';
 import haversine from "haversine";
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Modal from 'react-native-modal'
-import MapView, { PROVIDER_GOOGLE, Geojson, Marker, AnimatedRegion, Polyline, Callout} from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Geojson, Marker, AnimatedRegion, Polyline} from 'react-native-maps';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.009;
 const LONGITUDE_DELTA = 0.009;
 const LATITUDE = 31.6600768;
 const LONGITUDE = 35.1102883;
-// const usersRef = firestore().collection('Users');
 
 const markerRef = firestore().collection('Markers');
 
@@ -22,35 +22,35 @@ export class HomeScreen extends React.Component {
 
 constructor(props) {
   super(props);
-  console.log('props: ', props)
+  // console.log('props: ', props)
 
   this.state = {
+    region: null,
+    locations: [],
+    stationaries: [],
+    isRunning: false,
+    markerUrl: '',
     width: '99%',
-    childRef: '',
     userMail: '',
     active : null,
     activeModal : null,
+    infoModal: null,
     modalVisible: false,
-    hackHeight: height,
     Trail: Trail1, //represent the Trail json
     latitude: 31.6600768,
     longitude: 35.1102883,
     routeCoordinates: [],
     distanceTravelled: 0,
-    flex: 0,
     marker: null,
     markers: [],
-    markerText: "test",
-    mapMargin:1,
     prevLatLng: {},
     initialRegion:{
       latitude: 31.6600768,
       longitude: 35.1102883,
       latitudeDelta: 0.0122,
       longitudeDelta: 0.009
-      // longitudeDelta: Dimensions.get('window').width / Dimensions.get('window')
     },
-    marginBottom: 0,
+
     coordinate: new AnimatedRegion({
       latitude: LATITUDE,
       longitude: LONGITUDE,
@@ -61,26 +61,29 @@ constructor(props) {
   }
   
   componentDidMount() {
-    //get the user email from async storage
+   
+    LogBox.ignoreLogs(['Animated: `useNativeDriver`']);
+     //get the user email from async storage
     AsyncStorage.getItem('userData', (err, result) => {
-      // console.log('result is: ', result);
       let userEmail = JSON.parse(result)
       this.setState({userMail: userEmail.email})
       // console.log(userEmail.email)
 })
 // get markers from DB
-    markerRef.get()
-    .then(querySnapshot => {
-      console.log('Total users: ', querySnapshot.size);
+    markerRef
+    .onSnapshot(querySnapshot => {
+      // console.log('Total users: ', querySnapshot.size);
       const markers = [];
+      // if(querySnapshot)
       querySnapshot.forEach(res => {
-        const {title, info, latitude, longitude, imageUri} = res.data()
+        const {title, info, latitude, longitude, imageUri,approved} = res.data()
         markers.push({
           latitude,
           longitude,
           title,
           info,
           imageUri,
+          approved,
           id: res.id
         })
       });
@@ -89,19 +92,133 @@ constructor(props) {
       })
     });
     
-    //method to track user.
-    this.handleUserLocation();
-    setTimeout( () =>this.setState({marginBottom: 1}), 100)
-    this.watchID = Geolocation.watchPosition(
-      position => {
+
+    function logError(msg) {
+      console.log(`[ERROR] getLocations: ${msg}`);
+    }
+
+    const handleHistoricLocations = locations => {
+      let region = null;
+      const now = Date.now();
+      const latitudeDelta = 0.01;
+      const longitudeDelta = 0.01;
+      const durationOfDayInMillis = 24 * 3600 * 1000;
+
+      const locationsPast24Hours = locations.filter(location => {
+        return now - location.time <= durationOfDayInMillis;
+      });
+
+      if (locationsPast24Hours.length > 0) {
+        // asume locations are already sorted
+        const lastLocation =
+          locationsPast24Hours[locationsPast24Hours.length - 1];
+        region = Object.assign({}, lastLocation, {
+          latitudeDelta,
+          longitudeDelta
+        });
+      }
+      this.setState({ locations: locationsPast24Hours, region });
+    };
+// config for background geolocation 
+    BackgroundGeolocation.configure({
+      desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
+      stationaryRadius: 50,
+      distanceFilter: 50,
+      notificationTitle: 'Background tracking',
+      notificationText: 'enabled',
+      //debug: true,
+      startOnBoot: false,
+      stopOnTerminate: true,
+      locationProvider: BackgroundGeolocation.DISTANCE_FILTER_PROVIDER, // DISTANCE_FILTER_PROVIDER for
+      interval: 10000,
+      fastestInterval: 5000,
+      activitiesInterval: 10000,
+      stopOnStillActivity: false,
+      // url: 'http://192.168.81.15:3000/location',
+      httpHeaders: {
+        'X-FOO': 'bar',
+      },
+      // customize post properties
+      postTemplate: {
+        lat: '@latitude',
+        lon: '@longitude',
+        foo: 'bar', // you can also add your own properties
+      },
+    });
+
+    BackgroundGeolocation.getValidLocations(
+      handleHistoricLocations.bind(this),
+      logError
+    );
+
+    BackgroundGeolocation.getCurrentLocation(lastLocation => {
+      let region = this.state.region;
+      const latitudeDelta = 0.01;
+      const longitudeDelta = 0.01;
+      region = Object.assign({}, lastLocation, {
+        latitudeDelta,
+        longitudeDelta
+      });
+      this.setState({ locations: [lastLocation], region });
+    }, (error) => {
+      setTimeout(() => {
+        Alert.alert('Error obtaining current location', JSON.stringify(error));
+      }, 100);
+    });
+
+    BackgroundGeolocation.on('start', () => {
+      // service started successfully
+      // you should adjust your app UI for example change switch element to indicate
+      // that service is running
+      console.log('[DEBUG] BackgroundGeolocation has been started');
+      this.setState({ isRunning: true });
+    });
+
+    BackgroundGeolocation.on('stop', () => {
+      console.log('[DEBUG] BackgroundGeolocation has been stopped');
+      this.setState({ isRunning: false });
+    });
+
+    BackgroundGeolocation.on('authorization', status => {
+      console.log(
+        '[INFO] BackgroundGeolocation authorization status: ' + status
+      );
+      if (status !== BackgroundGeolocation.AUTHORIZED) {
+        // we need to set delay after permission prompt or otherwise alert will not be shown
+        setTimeout(() =>
+          Alert.alert(
+            'App requires location tracking',
+            'Would you like to open app settings?',
+            [
+              {
+                text: 'Yes',
+                onPress: () => BackgroundGeolocation.showAppSettings()
+              },
+              {
+                text: 'No',
+                onPress: () => console.log('No Pressed'),
+                style: 'cancel'
+              }
+            ]
+        ), 1000);
+      }
+    });
+
+    BackgroundGeolocation.on('error', ({ message }) => {
+      Alert.alert('BackgroundGeolocation error', message);
+    });
+
+    BackgroundGeolocation.on('location', location => {
+      console.log('[DEBUG] BackgroundGeolocation location', location);
+      console.log('what location is: ', location)
+      BackgroundGeolocation.startTask(taskKey => {
         const { coordinate, routeCoordinates, distanceTravelled } =   this.state;
-        const { latitude, longitude } = position.coords;
-  
+        const { latitude, longitude } = location;
+        // console.log('lat is:', latitude)
         const newCoordinate = {
           latitude,
           longitude
         };
-        
             coordinate.timing(newCoordinate).start();
           
           this.setState({
@@ -112,42 +229,119 @@ constructor(props) {
             distanceTravelled + this.calcDistance(newCoordinate),
             prevLatLng: newCoordinate
           });
-        },
-        error => console.log(error),
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
+          console.log('the route is: ', this.state.routeCoordinates)
+          console.log('the distance is: ', this.state.distanceTravelled)
+
+
+          BackgroundGeolocation.endTask(taskKey);
+          
+        // });
+      });
+    });
+
+    BackgroundGeolocation.on('stationary', (location) => {
+      console.log('[DEBUG] BackgroundGeolocation stationary', location);
+      BackgroundGeolocation.startTask(taskKey => {
+        requestAnimationFrame(() => {
+          const stationaries = this.state.stationaries.slice(0);
+          if (location.radius) {
+            const longitudeDelta = 0.01;
+            const latitudeDelta = 0.01;
+            const region = Object.assign({}, location, {
+              latitudeDelta,
+              longitudeDelta
+            });
+            const stationaries = this.state.stationaries.slice(0);
+            stationaries.push(location);
+            this.setState({ stationaries, region });
+          }
+          BackgroundGeolocation.endTask(taskKey);
+        });
+      });
+    });
+
+    BackgroundGeolocation.on('foreground', () => {
+      console.log('[INFO] App is in foreground');
+    });
+
+    BackgroundGeolocation.on('background', () => {
+      console.log('[INFO] App is in background');
+    });
+
+    BackgroundGeolocation.checkStatus(({ isRunning }) => {
+      this.setState({ isRunning });
+      if (isRunning) {
+        BackgroundGeolocation.start();
+      }
+    });
+
 
   }
 
   componentWillUnmount() {
-   
     Geolocation.clearWatch(this.watchID);
+    BackgroundGeolocation.events.forEach(event =>
+      BackgroundGeolocation.removeAllListeners(event)
+    );
+  }
+
+  toggleTracking() {
+    console.log('bg tracking enabled')
+    
+    BackgroundGeolocation.checkStatus(({ isRunning, locationServicesEnabled, authorization }) => {
+      if (isRunning) {
+        BackgroundGeolocation.stop();
+        return false;
+      }
+
+      if (!locationServicesEnabled) {
+        Alert.alert(
+          'Location services disabled',
+          'Would you like to open location settings?',
+          [
+            {
+              text: 'Yes',
+              onPress: () => BackgroundGeolocation.showLocationSettings()
+            },
+            {
+              text: 'No',
+              onPress: () => console.log('No Pressed'),
+              style: 'cancel'
+            }
+          ]
+        );
+        return false;
+      }
+
+      if (authorization == 99) {
+        // authorization yet to be determined
+        BackgroundGeolocation.start();
+      } else if (authorization == BackgroundGeolocation.AUTHORIZED) {
+        // calling start will also ask user for permission if needed
+        // permission error will be handled in permisision_denied event
+        BackgroundGeolocation.start();
+      } else {
+        Alert.alert(
+          'App requires location tracking',
+          'Please grant permission',
+          [
+            {
+              text: 'Ok',
+              onPress: () => BackgroundGeolocation.start()
+            }
+          ]
+        );
+      }
+    });
   }
 
   setModalVisible = (visible) => {
     this.setState({ modalVisible: visible });
   }
 
-  handleUserLocation =() =>{
-    Geolocation.getCurrentPosition(pos => {
-      // alert(JSON.stringify(pos)) // <<~ works 
-      this.map.animateToRegion({
-        ...this.state.initialRegion,
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude
-      })
-      this.setState({
-        ...this.state.initialRegion,
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude
-      })
-    },
-    err => {
-      console.log(err);
-      alert("Something went wrong! please select location manually")
-    },
-    // { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 },
-    )
+
+  requestGeoLocationPermission = () => {
+    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
   }
 
   getMapRegion = () => ({
@@ -165,7 +359,7 @@ constructor(props) {
 // shows the latlng on each view change
   onChangeValue = initialRegion => {
     ToastAndroid.show(JSON.stringify(initialRegion), ToastAndroid.SHORT)
-    console.log(JSON.stringify(initialRegion))
+    // console.log(JSON.stringify(initialRegion))
     this.setState({
       initialRegion
     })
@@ -176,7 +370,7 @@ constructor(props) {
   };
 
   newMarker = coords => {
-    console.log('cords are: ', coords)
+    // console.log('cords are: ', coords)
     this.setState({ marker: coords })
     this.setState({activeModal: 'true'}) // enable the modal
   }
@@ -201,12 +395,35 @@ constructor(props) {
        }> 
           <Text> הוסף נקודת עניין חדשה</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={()=>this.setState({activeModal: null})}>
-          <Text> Close</Text>
-        </TouchableOpacity> */}
-        {/* <TouchableOpacity onPress={()=>console.log('marker::: ', this.state.markers)}>
-          <Text> marker show test</Text>
-        </TouchableOpacity> */}
+        </View>
+      </Modal>
+    )
+  }
+
+  infoModal(){
+    const {infoModal} = this.state;
+    if (!infoModal) return null;     
+    return(
+      <Modal
+       isVisible
+       transparent
+       onBackButtonPress={() => this.setState({ infoModal: null })}
+       onBackdropPress={() => this.setState({ infoModal: null })}
+      >
+        
+        <View style={styles.modalView}>
+      {/* this.props.navigation.navigate - in order to work under class */}
+       <TouchableOpacity onPress={() => {this.props.navigation.navigate('UploadScreen', {
+         marker: this.state.marker,
+         email: this.state.userMail,
+       }), this.setState({ infoModal: null })}
+       }> 
+          <Text> הוסף נקודת עניין חדשה</Text>
+        </TouchableOpacity>
+        
+        <Image source = {{uri:this.state.markerUrl}} //{{uri: marker.imageUri}}
+              style = {{ width: '90%', height: 200, justifyContent: 'center', flex: 1,}}
+            />        
         </View>
       </Modal>
     )
@@ -214,13 +431,11 @@ constructor(props) {
 
 //function move to current location
   gotToMyLocation(){
-    console.log('gotToMyLocation is called')
     Geolocation.getCurrentPosition(
       ({ coords }) => {
-        console.log("curent location: ", coords)
-        // console.log(this.map);
+        // console.log("curent location: ", coords)
         if (this.map) {
-          console.log("curent location: ", coords)
+          // console.log("curent location: ", coords)
           this.map.animateToRegion({
             latitude: coords.latitude,
             longitude: coords.longitude,
@@ -234,21 +449,61 @@ constructor(props) {
     )
   }
 
+  onMarkerPress = (mapEventData, marker) => {
+    const markerID = mapEventData._targetInst.return.key;
+   console.log('marker email: ', marker.id, markerID)
+  //  this.setState({infoModal: 'true', markerUrl: marker.imageUri})
+    }
+
+   
+
+callMarker(marker) {
+  return(
+      <MapView.Callout >
+      <View >
+            <View > 
+              
+              {marker.imageUri &&  <Image source = {{uri:marker.imageUri}} //{{uri: marker.imageUri}}
+              style = {{ width: '90%', height: 200, justifyContent: 'center', flex: 1,}}
+            /> }        
+            </View>
+          <Text>Lat: {marker.latitude}, Lon: {marker.longitude}</Text>
+          <Text>{marker.email}</Text>
+      </View>
+    </MapView.Callout>    
+  )
+  
+}
+
 //method to show location button
   _fixLocationButton =() =>{
     this.setState({width: '100%'})
+    this.requestGeoLocationPermission
   }
+
+  
 
 render() {
   return (
       <View style={{paddingBottom: this.state.paddingBottom }}>
         {/* Next method to make custom current location button */}
-      {/* <TouchableOpacity onPress={this.gotToMyLocation.bind(this)} style={[ {
+      <TouchableOpacity onPress={this.gotToMyLocation.bind(this)} style={[ {
           width: 60, height: 60,
           position: "absolute", bottom: 20, right: 20, borderRadius: 30, backgroundColor: "#d2d2d2"
         }]}>
           <Text>follow</Text>
-      </TouchableOpacity>      */}
+      </TouchableOpacity>     
+      <TouchableOpacity onPress={this.handleTrailRecord.bind(this)} style={[ {
+          width: 60, height: 60,
+          position: "absolute", bottom: 20, right: 240, borderRadius: 30, backgroundColor: "#d2d2d2"
+        }]}>
+          <Text>הקלט מסלול</Text>
+      </TouchableOpacity>     
+      
+      <Text style={{backgroundColor: 'white'}}> 
+       <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >הפעל</Text></TouchableOpacity>
+      <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >עצור</Text></TouchableOpacity>
+      <TouchableOpacity><Text style={{marginRight: 20}} >שמור</Text></TouchableOpacity></Text>
       <MapView
       provider={PROVIDER_GOOGLE} 
       // style={styles.map}
@@ -263,7 +518,6 @@ render() {
       }}
       
       mapType={"hybrid"}
-      showsScale={true}
       showsPointsOfInterest={false}
       showsBuildings={true}
       showsUserLocation ={true}
@@ -278,53 +532,70 @@ render() {
       ref = {ref => this.map =ref}
       //add longpress event for marker callout
       onLongPress={(e) => this.newMarker(e.nativeEvent.coordinate)}
-      // onLongPress={(e) => this.setState({ marker: e.nativeEvent.coordinate })}
       >
-      {
+{/* added for background geolocation */}
+{/* {this.state.locations.map((location, idx) => (
+              <MapView.Marker
+                key={idx}
+                coordinate={location}
+                // image={TrackingDot}
+              />
+            ))}
+            {this.state.stationaries.map((stationary, idx) => {
+              return (
+                <MapView.Circle
+                  key={idx}
+                  center={stationary}
+                  radius={stationary.radius}
+                  fillColor="#AAA"
+                />
+              );
+            })} */}
+      { //draw marker on press.
             this.state.marker &&
             <MapView.Marker coordinate={this.state.marker}  >
-              <MapView.Callout>
+              {/* <MapView.Callout>
                 <View>
                     <Text>Lat:, Lon:</Text>
                     <Text> test marker</Text>
                 </View>
-              </MapView.Callout>
+              </MapView.Callout> */}
             </MapView.Marker>
       }
-      {
+
+{
         this.state.markers.map(marker => (
-          
+          marker.approved &&
           <MapView.Marker
             key={marker.id}
-            coordinate={{longitude: marker.longitude, latitude: marker.latitude}}>
-              <MapView.Callout>
-                <View>
-                      <View>
-                        {marker.imageUri && <Image source = {{uri: marker.imageUri}}
-                        style = {{ width: '90%', height: 100, justifyContent: 'center', flex: 1, alignContent: 'center', resizeMode: 'stretch'}}
-                      />  }        
+            coordinate={{longitude: marker.longitude, latitude: marker.latitude}}
+            onPress={(e)=>this.onMarkerPress(e, marker)} //
+            >
+            
+              <MapView.Callout tooltip
+                      onPress={() => this.setState({infoModal: 'true', markerUrl: marker.imageUri})}
+              
+              >
+                <View style={{backgroundColor: 'white'}} >
+                      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}> 
                       </View>
                     <Text>Lat: {marker.latitude}, Lon: {marker.longitude}</Text>
                     <Text>{marker.email}</Text>
+                    <TouchableOpacity onPress={() => this.setState({infoModal: 'true', markerUrl: marker.imageUri})}>
+                      <Text style={{color: 'blue'}}> למידע נוסף </Text>
+                    </TouchableOpacity>
                 </View>
               </MapView.Callout>         
-          </MapView.Marker>
+          </MapView.Marker> 
+          
         ))
       }
-  
       <Geojson 
         geojson={this.state.Trail} 
         strokeColor="red"
         fillColor="green"
         strokeWidth={2}
       />
-      {/* Used for custom area limitation */}
-      {/* <Geojson 
-        geojson={area} 
-        strokeColor="red"
-        fillColor= "#4d1427a5"
-        strokeWidth={1}
-      /> */}
       <Marker 
         coordinate={{
           latitude: 31.7955783,
@@ -335,7 +606,7 @@ render() {
       >
       </Marker>
 
-      <Marker
+      {/* <Marker
         coordinate={this.getMapRegion()}
         title={this.state.markerText}
         draggable 
@@ -348,23 +619,23 @@ render() {
         </MapView.Callout>
 
 
-      </Marker>
+      </Marker> */}
 
     
         <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5} />
         <Marker.Animated
+          
           ref={marker => {
             this.marker = marker;
           }}
-          coordinate={this.state.coordinate}
+          coordinate={this.state.coordinate}  
         >
-          
         </Marker.Animated>
 
 
   </MapView>
   
-      <View style={{marginTop: 10}}>
+      <View  >
       </View>
       <View style={{top:height-160}}>
   
@@ -393,6 +664,7 @@ render() {
       
     </View>
     {this.renderModal()}
+    {this.infoModal()}
     </View>
 
     );

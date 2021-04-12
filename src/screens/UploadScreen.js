@@ -114,7 +114,8 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
           email: email,
           imageUri: imageURI,
           title: markerTitle,
-          info: markerInfo
+          info: markerInfo,
+          approved: false
           
         })
         .then((snapshot) =>{ //get marker doc ID from firestore
