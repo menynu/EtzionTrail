@@ -1,16 +1,17 @@
+/* eslint-disable react/prop-types */
 import * as React from 'react';
 import {Button, TextInput, View, StyleSheet} from 'react-native';
 import {AuthContext} from '../utils/Context'
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 
 export function SignInScreen({navigation}) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const  { signIn }  = React.useContext(AuthContext); 
     const {container, txtInput} = styles;
-  
-    const [userData, setUserData] = React.useState([]);
+    const AdminRef = firestore().collection('Admins'); 
 
     const setToken = async (user) => {
       console.log('set user login!:: ', JSON.stringify(user))
@@ -29,8 +30,17 @@ export function SignInScreen({navigation}) {
         if (response && response.user) {
           alert("Success Authenticated successfully")
           console.log('after login: res data: ', response.user)
-          // setUserData(response.user)
+          AdminRef
+          .onSnapshot(querySnapshot => {
+            if(querySnapshot)
+            {
+              querySnapshot.forEach(async res => {
+                if (res.data().userEmail === email)
+                  await AsyncStorage.setItem("Admin", JSON.stringify(true))               
+            })}
+          })
           setToken(response.user)
+          console.log("res user: ", response.user)
           AsyncStorage.setItem("userEmail",  response.user.email);
           // console.log('user data: ', userData)
           signIn('Token', response.user.uid)

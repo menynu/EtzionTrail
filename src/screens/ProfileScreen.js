@@ -11,7 +11,7 @@ export function ProfileScreen() {
     const [admin, setAdmin] = React.useState(false)
   //get the data of current user.
     AsyncStorage.getItem('userData', (err, result) => {
-      console.log(result);
+      console.log('user data is: ', result);
     })
     AsyncStorage.getItem('Admin', (err, result) => {
     console.log('is admin on?: ',result);

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import {Dimensions, StyleSheet, View, LogBox , Text, TouchableOpacity, ToastAndroid, Image, PermissionsAndroid} from 'react-native';
+import {Dimensions, StyleSheet, View, LogBox ,Alert, Text, TouchableOpacity, ToastAndroid, Image, PermissionsAndroid} from 'react-native';
 import BackgroundGeolocation from '@darron1217/react-native-background-geolocation';
 import {Trail1, Trail2, Trail3 ,Trail4} from '../trails';
 import haversine from "haversine";
@@ -31,7 +31,7 @@ constructor(props) {
     isRunning: false,
     markerUrl: '',
     width: '99%',
-    userMail: '',
+    userEmail: '',
     active : null,
     activeModal : null,
     infoModal: null,
@@ -60,30 +60,31 @@ constructor(props) {
   };
   }
   
+  _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('userData');
+      if (value !== null) {
+        let Email = JSON.parse(value)
+        console.log('the user email: ', Email.email)
+      this.setState({userEmail: Email.email})
+      }
+    } catch (error) {
+      // Error retrieving data
+      console.log('no user found')
+    }
+  };
+
   componentDidMount() {
-   
     LogBox.ignoreLogs(['Animated: `useNativeDriver`']);
      //get the user email from async storage
-    AsyncStorage.getItem('userData', (err, result) => {
-      let userEmail = JSON.parse(result)
-      this.setState({userMail: userEmail.email})
-      // console.log(userEmail.email)
-})
+     
 // get markers from DB
-    markerRef
-    .onSnapshot(querySnapshot => {
-      // console.log('Total users: ', querySnapshot.size);
+    markerRef.onSnapshot(querySnapshot => {
       const markers = [];
-      // if(querySnapshot)
+      if (querySnapshot)    
       querySnapshot.forEach(res => {
-        const {title, info, latitude, longitude, imageUri,approved} = res.data()
         markers.push({
-          latitude,
-          longitude,
-          title,
-          info,
-          imageUri,
-          approved,
+          ...res.data(),
           id: res.id
         })
       });
@@ -91,7 +92,7 @@ constructor(props) {
         markers,
       })
     });
-    
+    this._retrieveData()
 
     function logError(msg) {
       console.log(`[ERROR] getLocations: ${msg}`);
@@ -123,7 +124,7 @@ constructor(props) {
     BackgroundGeolocation.configure({
       desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
       stationaryRadius: 50,
-      distanceFilter: 50,
+      distanceFilter: 10, //meters
       notificationTitle: 'Background tracking',
       notificationText: 'enabled',
       //debug: true,
@@ -285,6 +286,24 @@ constructor(props) {
     );
   }
 
+  // function to save track to DB
+  async saveTrack(){
+    console.log('save track')
+    if (this.state.distanceTravelled > 0)
+    {
+      await firestore().collection('Tracks').add({
+        track: this.state.routeCoordinates,
+        distance: this.state.distanceTravelled,
+        user: this.state.userEmail
+    })
+      this.setState({
+        routeCoordinates:[],
+        distance: 0,
+      })
+    }
+      
+  }
+
   toggleTracking() {
     console.log('bg tracking enabled')
     
@@ -390,7 +409,7 @@ constructor(props) {
       {/* this.props.navigation.navigate - in order to work under class */}
        <TouchableOpacity onPress={() => {this.props.navigation.navigate('UploadScreen', {
          marker: this.state.marker,
-         email: this.state.userMail,
+         email: this.state.userEmail,
        }), this.setState({ activeModal: null })}
        }> 
           <Text> הוסף נקודת עניין חדשה</Text>
@@ -415,7 +434,7 @@ constructor(props) {
       {/* this.props.navigation.navigate - in order to work under class */}
        <TouchableOpacity onPress={() => {this.props.navigation.navigate('UploadScreen', {
          marker: this.state.marker,
-         email: this.state.userMail,
+         email: this.state.userEmail,
        }), this.setState({ infoModal: null })}
        }> 
           <Text> הוסף נקודת עניין חדשה</Text>
@@ -455,15 +474,13 @@ constructor(props) {
   //  this.setState({infoModal: 'true', markerUrl: marker.imageUri})
     }
 
-   
-
 callMarker(marker) {
   return(
       <MapView.Callout >
       <View >
             <View > 
               
-              {marker.imageUri &&  <Image source = {{uri:marker.imageUri}} //{{uri: marker.imageUri}}
+              {marker.imageUri &&  <Image source = {{uri:marker.imageUri}} 
               style = {{ width: '90%', height: 200, justifyContent: 'center', flex: 1,}}
             /> }        
             </View>
@@ -493,17 +510,17 @@ render() {
         }]}>
           <Text>follow</Text>
       </TouchableOpacity>     
-      <TouchableOpacity onPress={this.handleTrailRecord.bind(this)} style={[ {
+      {/* <TouchableOpacity onPress={this.handleTrailRecord.bind(this)} style={[ {
           width: 60, height: 60,
           position: "absolute", bottom: 20, right: 240, borderRadius: 30, backgroundColor: "#d2d2d2"
         }]}>
           <Text>הקלט מסלול</Text>
-      </TouchableOpacity>     
+      </TouchableOpacity>      */}
       
       <Text style={{backgroundColor: 'white'}}> 
        <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >הפעל</Text></TouchableOpacity>
       <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >עצור</Text></TouchableOpacity>
-      <TouchableOpacity><Text style={{marginRight: 20}} >שמור</Text></TouchableOpacity></Text>
+      <TouchableOpacity onPress={()=>this.saveTrack()}><Text style={{marginRight: 20}} >שמור</Text></TouchableOpacity></Text>
       <MapView
       provider={PROVIDER_GOOGLE} 
       // style={styles.map}
