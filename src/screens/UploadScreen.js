@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Progress from 'react-native-progress';
 import firestore from '@react-native-firebase/firestore';
 import { ScrollView } from 'react-native-gesture-handler';
-
+import { RadioButton } from 'react-native-paper';
 export const refContext = React.createContext()
 
 export function UploadScreen({route, navigation: { goBack, pop }}) {
@@ -28,12 +28,13 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
     const [transferred, setTransferred] = useState(0);
     const [userEmail,setUserEmail] = useState(null)
     const[imageURI, setImageURI] = useState(null)
-    const[markerID, setMarkerID] = useState(null)  // in order to get marker ID
+    // const[markerID, setMarkerID] = useState(null)  // in order to get marker ID
     const[markerTitle, setMarkerTitle] = useState(null)
     const[markerInfo, setMarkerInfo] = useState(null)
-    
+    const [value, setValue] = React.useState('../assets/marker.png');
     const markerRef = firestore().collection('Markers');
     const {marker, email} = route.params;
+   
 
     AsyncStorage.getItem('userData', (err, result) => {
         let mail = JSON.parse(result)
@@ -66,9 +67,23 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
         });
       };
 
-
-
-      const uploadImage = async () => {
+      const _addMarker = async () => {
+        if (!image)
+          {
+            await markerRef.add({
+              longitude: marker.longitude,
+              latitude: marker.latitude,
+              email: email,
+              // imageUri: url,
+              title: markerTitle,
+              info: markerInfo,
+              approved: false,
+              img: value
+            })
+            Alert.alert('הוספת נקודת עניין חדשה בהצלחה')
+            pop() 
+            return
+          }
         const { uri } = image;
         console.log('THE URI:', uri) //uri stands for the image location on device
         const filename = uri.substring(uri.lastIndexOf('/') + 1);
@@ -99,41 +114,31 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
         console.log('uri: ', url);
         setImageURI(url)
         setUploading(false);
-        Alert.alert(
-          'Photo uploaded!',
-          'Your photo has been uploaded to Firebase Cloud Storage!'
-        );
         setImage(null);
-      };
-      
-
-      const _addMarker =() =>{
-        markerRef.add({
+        await markerRef.add({
           longitude: marker.longitude,
           latitude: marker.latitude,
           email: email,
-          imageUri: imageURI,
+          imageUri: url,
           title: markerTitle,
           info: markerInfo,
-          approved: false
-          
+          approved: false,
+          img: value
         })
-        .then((snapshot) =>{ //get marker doc ID from firestore
-            console.log('snapshot: ', snapshot)
-            setMarkerID(snapshot.id)
-        })
-        .then(alert('הוספת נקודת עניין חדשה בהצלחה'))
-        .then(pop()) //remove from stack and return back
-        
-    
+
+        alert('הוספת נקודת עניין חדשה בהצלחה')
+        pop() //remove from stack and return back
       };
+      
+
+   
 
       return (
         <ScrollView> 
         <SafeAreaView style={styles.container}>
             
           <TouchableOpacity style={styles.selectButton} onPress={selectImage}>
-            <Text style={styles.buttonText}>Pick an image</Text>
+            <Text style={styles.buttonText}>בחר תמונה</Text>
           </TouchableOpacity>
           <View style={styles.imageContainer}>
             {image !== null ? (
@@ -143,14 +148,26 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
               <View style={styles.progressBarContainer}>
                 <Progress.Bar progress={transferred} width={300} />
               </View>
-            ) : (
-              <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
-                <Text style={styles.buttonText}>Upload image</Text>
-              </TouchableOpacity>
-            )}
+            ) : null}
             <Text>
                 this is {marker.latitude}
             </Text>
+            {/* <View style={{ flexDirection: 'row' ,fontSize: 10, margin: 10}}> */}
+            <RadioButton.Group onValueChange={newValue => setValue(newValue)} value={value} >
+              <View style={{ flexDirection: 'row' ,fontSize: 10,  margin: 10}}>
+                <Text>סימון רגיל</Text>
+                <Image source={require('../assets/marker.png')} style={{width: 32, height: 32}} />
+                <RadioButton value="../assets/marker.png"  />
+                <Text>מידע</Text>
+                <Image source={require('../assets/info.png')} style={{width: 32, height: 32}} />
+                <RadioButton value="../assets/info.png" />
+                <Text>אזהרה</Text>
+                <Image source={require('../assets/alert.png')} style={{width: 32, height: 32}} />
+                <RadioButton value="../assets/alert.png" />
+              </View>
+            </RadioButton.Group>
+            {/* </View> */}
+        
             <TextInput
                 style={styles.textInput}
                 backgroundColor={'#f7f7f7'}
@@ -192,7 +209,9 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
         container: {
           flex: 1,
           alignItems: 'center',
-          backgroundColor: '#bbded6'
+          backgroundColor: '#bbded6',
+          // position: 'absolute',
+          
         },
         selectButton: {
           borderRadius: 5,
@@ -200,21 +219,13 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
           height: 50,
           backgroundColor: '#8ac6d1',
           alignItems: 'center',
-          justifyContent: 'center'
-        },
-        uploadButton: {
-          borderRadius: 5,
-          width: 150,
-          height: 50,
-          backgroundColor: '#ffb6b9',
-          alignItems: 'center',
           justifyContent: 'center',
-        //   marginTop: 20
+          margin: 20
         },
         buttonText: {
           color: 'white',
           fontSize: 18,
-          fontWeight: 'bold'
+          fontWeight: 'bold',
         },
         imageContainer: {
           marginTop: 30,

@@ -29,7 +29,6 @@ const ApproveMarkers =  (props) => {
                     key: documentSnapshot.id,
 
                 });
-                // console.log("trails test", markers)
                 
               });     
               setMarkers(markers);
@@ -77,10 +76,8 @@ const ApproveMarkers =  (props) => {
             style={({ pressed }) => [
                 { backgroundColor: pressed ? '#dddddd' : props.color },
                 styles.button,
-                {...props.style}
-            
+                {...props.style}   
             ]}
-
             >
             <Text style={styles.text}>  לחץ לאישור מידע</Text>
         </Pressable>
@@ -116,22 +113,13 @@ const ApproveMarkers =  (props) => {
                         </Text>
                     </View>}
                     </View>
-
-                 
-                  
-                  
-
                ))
             }
             </ScrollView>
             
       
         </View> 
-        }
-        {/* // <View>
-        //     <Text>Test</Text>
-        // </View> */}
-        
+        }      
         </>
     )
 }

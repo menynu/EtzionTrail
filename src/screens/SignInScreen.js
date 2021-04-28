@@ -22,18 +22,34 @@ export function SignInScreen({navigation}) {
       }
     }
 
+  // Format validation
+    const Validate = () => {
+      if (!email || !password){
+        alert('נא למלא אימייל וסיסמה')
+        return
+      }
+      let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+      if (reg.test(email) === false) {
+        alert("נא להכניס אמייל תקין");
+        return
+      }
+      if (password.length <6){
+        alert('הסיסמה חייבת להכיל לפחות 6 תווים')
+        return
+      }
+      doSignIn(email,password)
+    }
 
     const doSignIn = async (email, password) => {
+
     
       try {
         let response = await auth().signInWithEmailAndPassword(email, password)
         if (response && response.user) {
           alert("Success Authenticated successfully")
           console.log('after login: res data: ', response.user)
-          AdminRef
-          .onSnapshot(querySnapshot => {
-            if(querySnapshot)
-            {
+          AdminRef.onSnapshot(querySnapshot => {  
+            if(querySnapshot) {
               querySnapshot.forEach(async res => {
                 if (res.data().userEmail === email)
                   await AsyncStorage.setItem("Admin", JSON.stringify(true))               
@@ -42,14 +58,13 @@ export function SignInScreen({navigation}) {
           setToken(response.user)
           console.log("res user: ", response.user)
           AsyncStorage.setItem("userEmail",  response.user.email);
-          // console.log('user data: ', userData)
           signIn('Token', response.user.uid)
     
         }
       } catch (e) {
-        console.error(e.message)
+        console.log(e.message)
+        alert('אין משתמש כזה במערכת')
       }
-      // signIn({ email, password })
     }
 
 
@@ -70,11 +85,12 @@ export function SignInScreen({navigation}) {
         />
       <Button title="Sign in" onPress={() => {
            //signIn({ username, password })
-          doSignIn(email,password)
+          // doSignIn(email,password)
+          Validate()
           
 
           }} />
-        <Button title="Register" onPress={() => this.navigation.navigate('Register')} />
+        <Button title="Register" onPress={() => navigation.navigate('Register')} />
       </View>
     );
   }

@@ -1,19 +1,21 @@
+/* eslint-disable react/display-name */
 /* eslint-disable no-mixed-spaces-and-tabs */
 import * as React from 'react';
-import {SplashScreen, SignInScreen, ProfileScreen, HomeScreen , Registration, TrailScreen, Map, UploadScreen, TrailInfo} from './src/screens'
+import {SplashScreen, SignInScreen, ProfileScreen, HomeScreen , Registration, TrailScreen, UploadScreen, TrailInfo} from './src/screens'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {AuthContext} from './src/utils/Context';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/Ionicons';
+import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import auth from '@react-native-firebase/auth';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const StackAuth = createStackNavigator();
-const Tab = createBottomTabNavigator();
 const StackMap = createStackNavigator();
 const StackTrails = createStackNavigator();
 
-
+const Tab = createMaterialBottomTabNavigator();
 function AuthStack() {
   return (
     <StackAuth.Navigator initialRouteName="SignIn">
@@ -25,8 +27,16 @@ function AuthStack() {
 function TrailStack() {
   return (
     <StackTrails.Navigator initialRouteName="SignIn">
-      <StackTrails.Screen name="Trail" component={TrailScreen} />
+      <StackTrails.Screen name="Trail" component={TrailScreen} options={{
+                  headerShown: false
+              }} />
       <StackTrails.Screen name="TrailInfo" component={TrailInfo} />
+      <StackTrails.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+        options={{
+                  headerShown: false
+              }} />
     </StackTrails.Navigator>
   );
 }
@@ -159,14 +169,32 @@ export default function App({ navigation }) {
                 title: 'Sign in',
                 // When logging out, a pop animation feels intuitive
                 animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                // tabBarLabel: 'Profile',
+                tabBarIcon: ({color}) => (
+                  <Icon name="ios-home" color={color} size={26} />),
               }}
             />
                <Tab.Screen
               name="HomeScreen"
               component={MapStack}
-              
+              options={{
+                title: 'מפה',
+                // When logging out, a pop animation feels intuitive
+                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                // tabBarLabel: 'Profile',
+                tabBarIcon: ({color}) => (
+                  <Icon name="earth" color={color} size={26} />),
+              }}
             />
-            <Tab.Screen name="Trails" component={TrailStack} />
+            <Tab.Screen name="Trails" component={TrailStack}
+            options={{
+              title: 'שבילים',
+              // When logging out, a pop animation feels intuitive
+              animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+              // tabBarLabel: 'Profile',
+              tabBarIcon: ({color}) => (
+                <Icon name="map" color={color} size={26} />),
+            }} />
             </>
             
           ) : (
@@ -178,10 +206,33 @@ export default function App({ navigation }) {
               <Tab.Screen
                 name="HomeScreen"
                 component={MapStack}
+                options={{
+                  title: 'מפה',
+                  // When logging out, a pop animation feels intuitive
+                  animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                  // tabBarLabel: 'Profile',
+                  tabBarIcon: ({color}) => (
+                    <Icon name="earth" color={color} size={26} />),
+                }}
             />  
-            <Tab.Screen name="Profile" component={ProfileScreen} />
-            <Tab.Screen name="Map" component={Map} />
-            <Tab.Screen name="Trails" component={TrailStack} />
+            <Tab.Screen name="Profile" component={ProfileScreen} 
+            options={{
+              title: 'פרופיל',
+              // When logging out, a pop animation feels intuitive
+              animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+              // tabBarLabel: 'Profile',
+              tabBarIcon: ({color}) => (
+                <Icon name="settings" color={color} size={26} />),
+            }}/>
+            <Tab.Screen name="Trails" component={TrailStack}
+            options={{
+              title: 'שבילים',
+              // When logging out, a pop animation feels intuitive
+              animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+              // tabBarLabel: 'Profile',
+              tabBarIcon: ({color}) => (
+                <Icon name="map" color={color} size={26} />),
+            }} />
             </>
 
           )}

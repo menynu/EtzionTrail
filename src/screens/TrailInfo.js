@@ -1,11 +1,11 @@
 /* eslint react/prop-types: 0 */
 import * as React from 'react';
-import {View, Image, Text, StyleSheet} from 'react-native';
+import {View, Image, Text, StyleSheet, Button, Linking} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Edit from '../components/EditData'
 import { ScrollView } from 'react-native-gesture-handler';
-export function TrailInfo({route, navigation: { goBack, pop }}) {
-    const {name, info, key, imageUri} = route.params.item;
+export function TrailInfo({route, navigation}) {
+    const {name, info, key, imageUri, track, gallery} = route.params.item;
     const [admin, setAdmin] = React.useState(false)
 
       AsyncStorage.getItem('Admin', (err, result) => {
@@ -39,6 +39,12 @@ export function TrailInfo({route, navigation: { goBack, pop }}) {
                 <View >
                     <Image source={{uri: imageUri}} style={{width: '100%', height: 200}} />
                     <Text>{info}</Text>
+                    {console.log('cords: ', track)}
+                    {gallery && <Text style={{color: 'blue'}}
+                       onPress={() => Linking.openURL(gallery)}>
+                        לגלריה ותמונות נוספות
+                   </Text>}
+                    <Button title="test" onPress={()=> navigation.navigate('HomeScreen', {coords: track})}/>
                 </View>
             </View>
         </ScrollView>

@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Modal from 'react-native-modal'
 import MapView, { PROVIDER_GOOGLE, Geojson, Marker, AnimatedRegion, Polyline} from 'react-native-maps';
+import {Icon} from 'react-native-vector-icons'
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.009;
@@ -22,12 +23,17 @@ export class HomeScreen extends React.Component {
 
 constructor(props) {
   super(props);
-  // console.log('props: ', props)
-
+  console.log("props is",props);
+  // const { navigation, route } = this.props;
   this.state = {
+    // trailCoords:  this.props.navigation.route.params,
+    currMarker: null,
+    trailCords: [],
     region: null,
     locations: [],
     stationaries: [],
+    routeCoordinates: [],
+    distanceTravelled: 0,
     isRunning: false,
     markerUrl: '',
     width: '99%',
@@ -39,18 +45,15 @@ constructor(props) {
     Trail: Trail1, //represent the Trail json
     latitude: 31.6600768,
     longitude: 35.1102883,
-    routeCoordinates: [],
-    distanceTravelled: 0,
     marker: null,
     markers: [],
     prevLatLng: {},
-    initialRegion:{
+    initialRegion:{  // init region on map change
       latitude: 31.6600768,
       longitude: 35.1102883,
       latitudeDelta: 0.0122,
       longitudeDelta: 0.009
     },
-
     coordinate: new AnimatedRegion({
       latitude: LATITUDE,
       longitude: LONGITUDE,
@@ -59,7 +62,8 @@ constructor(props) {
     })
   };
   }
-  
+
+    //get the user email from storage
   _retrieveData = async () => {
     try {
       const value = await AsyncStorage.getItem('userData');
@@ -69,15 +73,12 @@ constructor(props) {
       this.setState({userEmail: Email.email})
       }
     } catch (error) {
-      // Error retrieving data
       console.log('no user found')
     }
   };
 
   componentDidMount() {
     LogBox.ignoreLogs(['Animated: `useNativeDriver`']);
-     //get the user email from async storage
-     
 // get markers from DB
     markerRef.onSnapshot(querySnapshot => {
       const markers = [];
@@ -92,65 +93,8 @@ constructor(props) {
         markers,
       })
     });
+
     this._retrieveData()
-
-    function logError(msg) {
-      console.log(`[ERROR] getLocations: ${msg}`);
-    }
-
-    const handleHistoricLocations = locations => {
-      let region = null;
-      const now = Date.now();
-      const latitudeDelta = 0.01;
-      const longitudeDelta = 0.01;
-      const durationOfDayInMillis = 24 * 3600 * 1000;
-
-      const locationsPast24Hours = locations.filter(location => {
-        return now - location.time <= durationOfDayInMillis;
-      });
-
-      if (locationsPast24Hours.length > 0) {
-        // asume locations are already sorted
-        const lastLocation =
-          locationsPast24Hours[locationsPast24Hours.length - 1];
-        region = Object.assign({}, lastLocation, {
-          latitudeDelta,
-          longitudeDelta
-        });
-      }
-      this.setState({ locations: locationsPast24Hours, region });
-    };
-// config for background geolocation 
-    BackgroundGeolocation.configure({
-      desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
-      stationaryRadius: 50,
-      distanceFilter: 10, //meters
-      notificationTitle: 'Background tracking',
-      notificationText: 'enabled',
-      //debug: true,
-      startOnBoot: false,
-      stopOnTerminate: true,
-      locationProvider: BackgroundGeolocation.DISTANCE_FILTER_PROVIDER, // DISTANCE_FILTER_PROVIDER for
-      interval: 10000,
-      fastestInterval: 5000,
-      activitiesInterval: 10000,
-      stopOnStillActivity: false,
-      // url: 'http://192.168.81.15:3000/location',
-      httpHeaders: {
-        'X-FOO': 'bar',
-      },
-      // customize post properties
-      postTemplate: {
-        lat: '@latitude',
-        lon: '@longitude',
-        foo: 'bar', // you can also add your own properties
-      },
-    });
-
-    BackgroundGeolocation.getValidLocations(
-      handleHistoricLocations.bind(this),
-      logError
-    );
 
     BackgroundGeolocation.getCurrentLocation(lastLocation => {
       let region = this.state.region;
@@ -165,48 +109,6 @@ constructor(props) {
       setTimeout(() => {
         Alert.alert('Error obtaining current location', JSON.stringify(error));
       }, 100);
-    });
-
-    BackgroundGeolocation.on('start', () => {
-      // service started successfully
-      // you should adjust your app UI for example change switch element to indicate
-      // that service is running
-      console.log('[DEBUG] BackgroundGeolocation has been started');
-      this.setState({ isRunning: true });
-    });
-
-    BackgroundGeolocation.on('stop', () => {
-      console.log('[DEBUG] BackgroundGeolocation has been stopped');
-      this.setState({ isRunning: false });
-    });
-
-    BackgroundGeolocation.on('authorization', status => {
-      console.log(
-        '[INFO] BackgroundGeolocation authorization status: ' + status
-      );
-      if (status !== BackgroundGeolocation.AUTHORIZED) {
-        // we need to set delay after permission prompt or otherwise alert will not be shown
-        setTimeout(() =>
-          Alert.alert(
-            'App requires location tracking',
-            'Would you like to open app settings?',
-            [
-              {
-                text: 'Yes',
-                onPress: () => BackgroundGeolocation.showAppSettings()
-              },
-              {
-                text: 'No',
-                onPress: () => console.log('No Pressed'),
-                style: 'cancel'
-              }
-            ]
-        ), 1000);
-      }
-    });
-
-    BackgroundGeolocation.on('error', ({ message }) => {
-      Alert.alert('BackgroundGeolocation error', message);
     });
 
     BackgroundGeolocation.on('location', location => {
@@ -232,11 +134,7 @@ constructor(props) {
           });
           console.log('the route is: ', this.state.routeCoordinates)
           console.log('the distance is: ', this.state.distanceTravelled)
-
-
           BackgroundGeolocation.endTask(taskKey);
-          
-        // });
       });
     });
 
@@ -260,27 +158,9 @@ constructor(props) {
         });
       });
     });
-
-    BackgroundGeolocation.on('foreground', () => {
-      console.log('[INFO] App is in foreground');
-    });
-
-    BackgroundGeolocation.on('background', () => {
-      console.log('[INFO] App is in background');
-    });
-
-    BackgroundGeolocation.checkStatus(({ isRunning }) => {
-      this.setState({ isRunning });
-      if (isRunning) {
-        BackgroundGeolocation.start();
-      }
-    });
-
-
   }
 
   componentWillUnmount() {
-    Geolocation.clearWatch(this.watchID);
     BackgroundGeolocation.events.forEach(event =>
       BackgroundGeolocation.removeAllListeners(event)
     );
@@ -291,7 +171,8 @@ constructor(props) {
     console.log('save track')
     if (this.state.distanceTravelled > 0)
     {
-      await firestore().collection('Tracks').add({
+      await firestore().collection('Tracks').
+      add({
         track: this.state.routeCoordinates,
         distance: this.state.distanceTravelled,
         user: this.state.userEmail
@@ -300,8 +181,7 @@ constructor(props) {
         routeCoordinates:[],
         distance: 0,
       })
-    }
-      
+    } 
   }
 
   toggleTracking() {
@@ -358,7 +238,6 @@ constructor(props) {
     this.setState({ modalVisible: visible });
   }
 
-
   requestGeoLocationPermission = () => {
     PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
   }
@@ -377,7 +256,7 @@ constructor(props) {
 
 // shows the latlng on each view change
   onChangeValue = initialRegion => {
-    ToastAndroid.show(JSON.stringify(initialRegion), ToastAndroid.SHORT)
+    // ToastAndroid.show(JSON.stringify(initialRegion), ToastAndroid.SHORT)
     // console.log(JSON.stringify(initialRegion))
     this.setState({
       initialRegion
@@ -394,6 +273,37 @@ constructor(props) {
     this.setState({activeModal: 'true'}) // enable the modal
   }
 
+  authHandler() {
+    if (this.state.userEmail) {
+      this.props.navigation.navigate('UploadScreen', {
+        marker: this.state.marker,
+        email: this.state.userEmail,
+      }), this.setState({ activeModal: null })}
+    else 
+    {
+      Alert.alert(
+        'על מנת להוסיף נקודת עניין עליך להתחבר למערכת',
+        ' ',     
+        [
+          {
+            text: 'התחברות',
+            onPress: () => this.props.navigation.navigate('SignIn')
+          },
+          {
+            text: 'הרשמה',
+            onPress: () => this.props.navigation.navigate('Register')
+          },
+          {
+            text: 'ביטול',
+            onPress: () =>  this.setState({activeModal: null}),
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+    
+  }
+
   renderModal(){
     const {activeModal} = this.state;
     if (!activeModal) return null;     
@@ -403,15 +313,10 @@ constructor(props) {
        transparent
        onBackButtonPress={() => this.setState({ activeModal: null })}
        onBackdropPress={() => this.setState({ activeModal: null })}
-      >
-        
+      >     
         <View style={styles.modalView}>
       {/* this.props.navigation.navigate - in order to work under class */}
-       <TouchableOpacity onPress={() => {this.props.navigation.navigate('UploadScreen', {
-         marker: this.state.marker,
-         email: this.state.userEmail,
-       }), this.setState({ activeModal: null })}
-       }> 
+       <TouchableOpacity onPress={() => this.authHandler()}> 
           <Text> הוסף נקודת עניין חדשה</Text>
         </TouchableOpacity>
         </View>
@@ -420,7 +325,7 @@ constructor(props) {
   }
 
   infoModal(){
-    const {infoModal} = this.state;
+    const {infoModal, currMarker} = this.state;
     if (!infoModal) return null;     
     return(
       <Modal
@@ -428,21 +333,16 @@ constructor(props) {
        transparent
        onBackButtonPress={() => this.setState({ infoModal: null })}
        onBackdropPress={() => this.setState({ infoModal: null })}
-      >
-        
-        <View style={styles.modalView}>
-      {/* this.props.navigation.navigate - in order to work under class */}
-       <TouchableOpacity onPress={() => {this.props.navigation.navigate('UploadScreen', {
-         marker: this.state.marker,
-         email: this.state.userEmail,
-       }), this.setState({ infoModal: null })}
-       }> 
-          <Text> הוסף נקודת עניין חדשה</Text>
-        </TouchableOpacity>
-        
-        <Image source = {{uri:this.state.markerUrl}} //{{uri: marker.imageUri}}
-              style = {{ width: '90%', height: 200, justifyContent: 'center', flex: 1,}}
-            />        
+       style={styles.modalView}
+      >  
+        <View >     
+       {console.log('the real infomodal: ', currMarker.email)}
+          <Text> {currMarker.title} </Text>
+          <Text> {currMarker.info} </Text>
+          {/* <Text> {this.state.markerUrl}</Text> */}
+          <Image source = {{uri:this.state.markerUrl}} //{{uri: marker.imageUri}}
+              style = {{ width: 400, height: 300, justifyContent: 'center', flex: 1,}}
+            />    
         </View>
       </Modal>
     )
@@ -468,29 +368,21 @@ constructor(props) {
     )
   }
 
+  
+
   onMarkerPress = (mapEventData, marker) => {
     const markerID = mapEventData._targetInst.return.key;
-   console.log('marker email: ', marker.id, markerID)
-  //  this.setState({infoModal: 'true', markerUrl: marker.imageUri})
-    }
-
-callMarker(marker) {
-  return(
-      <MapView.Callout >
-      <View >
-            <View > 
-              
-              {marker.imageUri &&  <Image source = {{uri:marker.imageUri}} 
-              style = {{ width: '90%', height: 200, justifyContent: 'center', flex: 1,}}
-            /> }        
-            </View>
-          <Text>Lat: {marker.latitude}, Lon: {marker.longitude}</Text>
-          <Text>{marker.email}</Text>
-      </View>
-    </MapView.Callout>    
-  )
-  
-}
+    console.log('marker email: ', marker.id, markerID)
+    console.log('marker: ', marker)
+    this.setState({currMarker: marker})
+    this.setState({infoModal: 'true', markerUrl: marker.imageUri})
+    console.log('the current marker: ', this.state.currMarker)
+  //  if (this.props.route.params)
+  //getparams
+    // console.log('route is: ', this.props.route.params.coords)
+    // const cords=this.props.route.params.coords
+    // this.setState({trailCords: cords})
+  }
 
 //method to show location button
   _fixLocationButton =() =>{
@@ -498,10 +390,11 @@ callMarker(marker) {
     this.requestGeoLocationPermission
   }
 
-  
 
 render() {
+
   return (
+     
       <View style={{paddingBottom: this.state.paddingBottom }}>
         {/* Next method to make custom current location button */}
       <TouchableOpacity onPress={this.gotToMyLocation.bind(this)} style={[ {
@@ -509,16 +402,9 @@ render() {
           position: "absolute", bottom: 20, right: 20, borderRadius: 30, backgroundColor: "#d2d2d2"
         }]}>
           <Text>follow</Text>
-      </TouchableOpacity>     
-      {/* <TouchableOpacity onPress={this.handleTrailRecord.bind(this)} style={[ {
-          width: 60, height: 60,
-          position: "absolute", bottom: 20, right: 240, borderRadius: 30, backgroundColor: "#d2d2d2"
-        }]}>
-          <Text>הקלט מסלול</Text>
-      </TouchableOpacity>      */}
-      
+      </TouchableOpacity>        
       <Text style={{backgroundColor: 'white'}}> 
-       <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >הפעל</Text></TouchableOpacity>
+      <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >הפעל</Text></TouchableOpacity>
       <TouchableOpacity onPress={()=>this.toggleTracking()}><Text style={{marginRight: 20}} >עצור</Text></TouchableOpacity>
       <TouchableOpacity onPress={()=>this.saveTrack()}><Text style={{marginRight: 20}} >שמור</Text></TouchableOpacity></Text>
       <MapView
@@ -527,15 +413,15 @@ render() {
       style={{
       position: 'absolute',
       top: 0,
-      bottom: 70,
+      // bottom: 70,
       width: this.state.width,
-      height: height-150,
+      height: height-20,
       flex: 1,
       zIndex: -1,
       }}
       
       mapType={"hybrid"}
-      showsPointsOfInterest={false}
+      showsPointsOfInterest={true}
       showsBuildings={true}
       showsUserLocation ={true}
       showsCompass = {true}
@@ -550,14 +436,7 @@ render() {
       //add longpress event for marker callout
       onLongPress={(e) => this.newMarker(e.nativeEvent.coordinate)}
       >
-{/* added for background geolocation */}
-{/* {this.state.locations.map((location, idx) => (
-              <MapView.Marker
-                key={idx}
-                coordinate={location}
-                // image={TrackingDot}
-              />
-            ))}
+
             {this.state.stationaries.map((stationary, idx) => {
               return (
                 <MapView.Circle
@@ -567,89 +446,60 @@ render() {
                   fillColor="#AAA"
                 />
               );
-            })} */}
-      { //draw marker on press.
-            this.state.marker &&
-            <MapView.Marker coordinate={this.state.marker}  >
-              {/* <MapView.Callout>
-                <View>
-                    <Text>Lat:, Lon:</Text>
-                    <Text> test marker</Text>
-                </View>
-              </MapView.Callout> */}
-            </MapView.Marker>
-      }
-
+            })}
 {
         this.state.markers.map(marker => (
           marker.approved &&
           <MapView.Marker
             key={marker.id}
             coordinate={{longitude: marker.longitude, latitude: marker.latitude}}
-            onPress={(e)=>this.onMarkerPress(e, marker)} //
+            onPress={(e)=>this.onMarkerPress(e, marker)}  
             >
-            
-              <MapView.Callout tooltip
+              {/* TODO: need to fix */}
+              {marker.img? <Image source={(marker.img)} style={{width: 42, height: 42}} />: 
+              <Image source={require('../assets/marker.png')} style={{width: 42, height: 42}} />}
+              {/* <Image source={require('../assets/marker.png')} style={{width: 42, height: 42}} /> */}
+              <MapView.Callout //tooltip
                       onPress={() => this.setState({infoModal: 'true', markerUrl: marker.imageUri})}
-              
               >
-                <View style={{backgroundColor: 'white'}} >
-                      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}> 
-                      </View>
-                    <Text>Lat: {marker.latitude}, Lon: {marker.longitude}</Text>
-                    <Text>{marker.email}</Text>
-                    <TouchableOpacity onPress={() => this.setState({infoModal: 'true', markerUrl: marker.imageUri})}>
-                      <Text style={{color: 'blue'}}> למידע נוסף </Text>
-                    </TouchableOpacity>
-                </View>
               </MapView.Callout>         
-          </MapView.Marker> 
-          
+          </MapView.Marker>   
         ))
       }
+
       <Geojson 
-        geojson={this.state.Trail} 
+        geojson={Trail1} 
         strokeColor="red"
         fillColor="green"
-        strokeWidth={2}
+        strokeWidth={3}
       />
-      <Marker 
-        coordinate={{
-          latitude: 31.7955783,
-          longitude: 35.1535883
-        }}
-        title= "new marker"
-        description= "desc..."
-      >
-      </Marker>
+      <Geojson 
+        geojson={Trail2} 
+        strokeColor="yellow"
+        fillColor="green"
+        strokeWidth={3}
+      />
+      <Geojson 
+        geojson={Trail3} 
+        strokeColor="blue"
+        fillColor="green"
+        strokeWidth={3}
+      />
+      <Geojson 
+        geojson={Trail4} 
+        strokeColor="green"
+        fillColor="green"
+        strokeWidth={3}
+      />
 
-      {/* <Marker
-        coordinate={this.getMapRegion()}
-        title={this.state.markerText}
-        draggable 
-        >
-      <MapView.Callout>
-                <View>
-                    <Text>Lat:, Lon:</Text>
-                    <Text>Magnitude, Depth:</Text>
-                </View>
-        </MapView.Callout>
-
-
-      </Marker> */}
-
-    
         <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5} />
-        <Marker.Animated
-          
+        <Marker.Animated     
           ref={marker => {
             this.marker = marker;
           }}
           coordinate={this.state.coordinate}  
         >
         </Marker.Animated>
-
-
   </MapView>
   
       <View  >
@@ -678,7 +528,6 @@ render() {
         }}>
         <Text> מסלול 4 </Text>
       </TouchableOpacity>
-      
     </View>
     {this.renderModal()}
     {this.infoModal()}
@@ -693,8 +542,6 @@ render() {
 const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        height: 400,
-        width: 400,
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
@@ -704,23 +551,13 @@ const styles = StyleSheet.create({
     },
     modal: {
       height: height, //* 0.75,
-      // position: 'absolute',
-      // backgroundColor: theme.COLORS.white,
-    },
-    map: {
-      ...StyleSheet.absoluteFillObject,
-      position: 'absolute',
-      //top: 50,
-      bottom: 70,
-      width,
-      height: height-150,
-      flex:1,
-      marginBottom:1
     },
     modalView: {
-    margin: 20,
+    justifyContent: 'flex-end',
+    width: '100%',
+    height: '30%',
+    margin: 0,
     backgroundColor: 'lightblue',
-    // height: height * 1.25,
     position: 'absolute',
     borderRadius: 20,
     padding: 35,

@@ -3,18 +3,9 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-// import {AuthContext} from '../utils/Context'
 const usersRef = firestore().collection('Users');
 
-
-
 export class Registration extends Component {
-
-  componentDidMount() {
-  
-    this.getToken();
-      console.log('this is the user dataaaaa: ',  this.state.userData);
- }
 
   constructor(props) {
     super(props);
@@ -34,17 +25,6 @@ export class Registration extends Component {
         console.log("Something went wrong", error);
       }
     }
-
-    async getToken() {
-      console.log('did we get here to get tokens?')
-      try {
-        let userData = await AsyncStorage.getItem("userData");
-        let data = JSON.parse(userData);
-        console.log(data);
-      } catch (error) {
-        console.log("Something went wrong", error);
-      }
-    }
     
     handleEmail = text => {
       this.setState({ email: text });
@@ -60,33 +40,41 @@ export class Registration extends Component {
       this.setState(state);
     }
   
+    Validate ()  {
+      if (!this.state.email || !this.state.password){
+        alert('נא למלא אימייל וסיסמה')
+        return
+      }
+      let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+      if (reg.test(this.state.email) === false) {
+        alert("נא להכניס אמייל תקין");
+        return
+      }
+      if (this.state.password.length <6){
+        alert('הסיסמה חייבת להכיל לפחות 6 תווים')
+        return
+      }
+      this.Register(this.state.email,this.state.password)
+    }
+
     async Register(Email,Password) {
-      if (Email === "" || Password === "" )
-        alert("נא למלא את כל הפרטים")
-    
-    else {
       try {
         let res = await auth().createUserWithEmailAndPassword(Email, Password)
-        if (res) {
-          console.log( "?", res)
-          
+        if (res) {          
             this.setState({ userData: res.user});
             this.storeToken(res.user);     
             console.log('the res data user: ', res.user)   
             console.log(this.state.userData);
-            alert(res.user.uid)
+            console.log('user login id:' ,res.user.uid)
             usersRef.add({
               Name: this.state.Name,
               Email: this.state.email})
-            this.navigation.navigate('SignIn' , res)
-            
-
+            this.props.navigation.navigate('SignIn' , res)
         }
       } catch (e) {
         console.error(e.message)
-      }
+      }    
     }
-  }
   
 
   render() {
@@ -121,7 +109,7 @@ export class Registration extends Component {
        />
       <TouchableOpacity
       style={styles.submitButton}
-      onPress={() => this.Register(this.state.email, this.state.password)} >
+      onPress={() => this.Validate()} >
      <Text style={styles.submitButtonText}> Register </Text>
     </TouchableOpacity>
     </View>

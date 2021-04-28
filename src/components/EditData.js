@@ -2,10 +2,15 @@ import React from 'react';
 import {Text, TextInput, View, StyleSheet, Pressable, TouchableOpacity, Alert} from 'react-native'
 import firestore from '@react-native-firebase/firestore';
 
+/*
+    Edit trail info data by admin user 
+*/
+
 const Edit =  (props) => {
     const [editable, setEditable] = React.useState(false)
     const trailRef = firestore().collection('Trails')
     const [trailInfo, setTrailInfo] = React.useState(null)
+    const [link, setLink] = React.useState(null)
     
     const pressed = async() =>{
         setEditable(true)
@@ -13,7 +18,7 @@ const Edit =  (props) => {
             setEditable(false)
             
         const myTrail = trailRef.doc(props.trailCollection)
-        const doc = await myTrail.get();
+        const doc = await myTrail.get(); // think to remove .get() for real time updates
         if (!doc.exists) {
           console.log('No such document!');
         } else {
@@ -33,7 +38,7 @@ const Edit =  (props) => {
                 'הנך עומד לערוך מידע',
                 'האם אתה בטוח?',
                 [
-                    {text: 'כן', onPress: () =>  trailDoc.update({info: trailInfo}).then(setEditable(false))   },
+                    {text: 'כן', onPress: () =>  trailDoc.update({info: trailInfo, gallery: link}).then(setEditable(false))   },
                     {text: 'לא', onPress: () => console.log('No item was removed'), style: 'cancel'},
                 ],
                 {
@@ -61,16 +66,26 @@ const Edit =  (props) => {
             <Text style={styles.text}> {props.title}</Text>
         </Pressable>
         {editable && <View>
-            <Text>Test {props.trailCollection}</Text>
+            <Text style={styles.text}> עריכת מידע עבור המקטע:</Text>
             <TextInput
-                                backgroundColor={'#f7f7f7'}
-                                multiline={true}
-                                numberOfLines={1}
-                                fontSize={20}
-                                placeholder={'Set Meeting Time:'}
-                                value={trailInfo}
-                                onChangeText={setTrailInfo}
-                            />
+                backgroundColor={'#f7f7f7'}
+                multiline={true}
+                numberOfLines={1}
+                fontSize={20}
+                placeholder={'Set Meeting Time:'}
+                value={trailInfo}
+                onChangeText={setTrailInfo}
+            />
+            <Text style={styles.text}> הוספת לינק לגלריית תמונות:</Text>
+            <TextInput
+                backgroundColor={'#f7f7f7'}
+                multiline={true}
+                numberOfLines={1}
+                fontSize={20}
+                placeholder={'לינק לגלריית תמונות'}
+                value={link}
+                onChangeText={setLink}
+            />
            <TouchableOpacity 
                 style = {{borderColor: 'black', backgroundColor: 'lightgreen', borderWidth: 1}}      
                 onPress={updateInfo}>

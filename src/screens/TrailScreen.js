@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {View, Text, FlatList, StyleSheet, ActivityIndicator, Image,TouchableOpacity } from 'react-native';
-// import { ScrollView } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
-import { firebase } from "@react-native-firebase/auth"
 import {Card} from '../components/Card'
+import PropTypes from 'prop-types';
 export function TrailScreen({navigation}) {
 
     const {containerStyle,txtInput} = styles;
@@ -11,18 +10,21 @@ export function TrailScreen({navigation}) {
     const [trails, setTrails] = useState([]); // Initial empty array of trails
     const [users, setUsers] = useState([]);
 
-    useEffect(() => {
+    useEffect( () => {
         console.log('This first use effect ')
-        const user = firebase.auth().currentUser;
         
-        
-        if (user) {
-        // console.log('User email: ', user.email);
-        }
-        const subscriber = firestore()
+        // const querySnapshot = await firebase.firestore().collection('users').get();
+
+        // querySnapshot.forEach((queryDocumentSnapshot) => {
+        //   console.log('User', queryDocumentSnapshot.data());
+        // })
+
+
+        const subscriber =  firestore()
           .collection('Trails')
-          .onSnapshot(querySnapshot => {
+          .onSnapshot(querySnapshot => { //const querySnapshot = await firebase.firestore().collection('users').get();
             const trails = [];
+            console.log('subscribe')
             if (querySnapshot)
               querySnapshot.forEach(async documentSnapshot => {
                 trails.push({
@@ -98,3 +100,9 @@ export function TrailScreen({navigation}) {
         marginBottom: 5,
     }
 })
+
+TrailScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
