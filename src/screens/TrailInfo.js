@@ -22,7 +22,6 @@ export function TrailInfo({route, navigation}) {
          
       }
 
-//TODO: 
     return(
         <>
        {/* <editData/> */}
@@ -30,15 +29,15 @@ export function TrailInfo({route, navigation}) {
             <View>
                 {admin && <Edit 
                         onPressFunction={handlePress}
-                        title={"edit"}
+                        title={"ערוך מידע"}
                         style={{margin: 10}}
-                        color={'green'}
+                        color={'red'}
                         trailCollection={key}
                         />}
                 <Text style={{fontSize:30}}> {name}</Text>
                 <View >
                     <Image source={{uri: imageUri}} style={{width: '100%', height: 200}} />
-                    <Text>{info}</Text>
+                    <Text style={{fontSize: 19, margin: 10}}>{info}</Text>
                     {console.log('cords: ', track)}
                     {gallery && <Text style={{color: 'blue'}}
                        onPress={() => Linking.openURL(gallery)}>
