@@ -8625,22 +8625,22 @@ export const Trail3 =
                 ]
             }
         },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "בור מים",
-                "desc": "<!-- desc_gen:start -->\n<font color=\"#ff000000\"><table width=\"100%\"><tr><td><table width=\"100%\"><tr><td align=\"left\" valign=\"center\"><small><b>Altitude</b></small></td><td align=\"center\" valign=\"center\">798 m</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Speed</b></small></td><td align=\"center\" valign=\"center\">0.0 km/h</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Azimuth</b></small></td><td align=\"center\" valign=\"center\">254 °</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Accuracy</b></small></td><td align=\"center\" valign=\"center\">4.0 m</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Created</b></small></td><td align=\"center\" valign=\"center\">2020-08-07 07:18:18</td></tr>\n</table></td></tr><tr><td><table width=\"100%\"></table></td></tr></table></font>\n<!-- desc_gen:end -->",
-                "time": "2020-08-07T04:18:18.337Z",
-                "sym": "Waypoint"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    35.17807,
-                    31.6377663,
-                    798
-                ]
-            }
-        }
+        // {
+        //     "type": "Feature",
+        //     "properties": {
+        //         "name": "בור מים",
+        //         "desc": "<!-- desc_gen:start -->\n<font color=\"#ff000000\"><table width=\"100%\"><tr><td><table width=\"100%\"><tr><td align=\"left\" valign=\"center\"><small><b>Altitude</b></small></td><td align=\"center\" valign=\"center\">798 m</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Speed</b></small></td><td align=\"center\" valign=\"center\">0.0 km/h</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Azimuth</b></small></td><td align=\"center\" valign=\"center\">254 °</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Accuracy</b></small></td><td align=\"center\" valign=\"center\">4.0 m</td></tr>\n<tr><td align=\"left\" valign=\"center\"><small><b>Created</b></small></td><td align=\"center\" valign=\"center\">2020-08-07 07:18:18</td></tr>\n</table></td></tr><tr><td><table width=\"100%\"></table></td></tr></table></font>\n<!-- desc_gen:end -->",
+        //         "time": "2020-08-07T04:18:18.337Z",
+        //         "sym": "Waypoint"
+        //     },
+        //     "geometry": {
+        //         "type": "Point",
+        //         "coordinates": [
+        //             35.17807,
+        //             31.6377663,
+        //             798
+        //         ]
+        //     }
+        // }
     ]
 }

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* global require */
+import React, { useState } from 'react';
 import {
   View,
   SafeAreaView,
@@ -10,10 +11,8 @@ import {
   TextInput
 } from 'react-native';
 import {
-    // launchCamera,
     launchImageLibrary
   } from 'react-native-image-picker';
-// import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Progress from 'react-native-progress';
@@ -31,7 +30,7 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
     // const[markerID, setMarkerID] = useState(null)  // in order to get marker ID
     const[markerTitle, setMarkerTitle] = useState(null)
     const[markerInfo, setMarkerInfo] = useState(null)
-    const [value, setValue] = React.useState('../assets/marker.png');
+    const [value, setValue] = React.useState('marker');
     const markerRef = firestore().collection('Markers');
     const {marker, email} = route.params;
    
@@ -68,6 +67,10 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
       };
 
       const _addMarker = async () => {
+        if (!markerInfo) {
+          alert('יש לתת תיאור לנקודת עניין')
+          return
+        }
         if (!image)
           {
             await markerRef.add({
@@ -134,11 +137,10 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
    
 
       return (
-        <ScrollView> 
-        <SafeAreaView style={styles.container}>
-            
+        <View style={styles.container}>
+          <ScrollView >       
           <TouchableOpacity style={styles.selectButton} onPress={selectImage}>
-            <Text style={styles.buttonText}>בחר תמונה</Text>
+            <Text style={styles.buttonText}>בחר\י תמונה</Text>
           </TouchableOpacity>
           <View style={styles.imageContainer}>
             {image !== null ? (
@@ -149,21 +151,18 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
                 <Progress.Bar progress={transferred} width={300} />
               </View>
             ) : null}
-            <Text>
-                this is {marker.latitude}
-            </Text>
             {/* <View style={{ flexDirection: 'row' ,fontSize: 10, margin: 10}}> */}
             <RadioButton.Group onValueChange={newValue => setValue(newValue)} value={value} >
               <View style={{ flexDirection: 'row' ,fontSize: 10,  margin: 10}}>
                 <Text>סימון רגיל</Text>
-                <Image source={require('../assets/marker.png')} style={{width: 32, height: 32}} />
-                <RadioButton value="../assets/marker.png"  />
+                <Image source={require('../assets/marker.png')} style={styles.marker} />
+                <RadioButton value="marker"  />
                 <Text>מידע</Text>
-                <Image source={require('../assets/info.png')} style={{width: 32, height: 32}} />
-                <RadioButton value="../assets/info.png" />
+                <Image source={require('../assets/info.png')} style={styles.marker} />
+                <RadioButton value="info" />
                 <Text>אזהרה</Text>
-                <Image source={require('../assets/alert.png')} style={{width: 32, height: 32}} />
-                <RadioButton value="../assets/alert.png" />
+                <Image source={require('../assets/alert.png')} style={styles.marker} />
+                <RadioButton value="alert" />
               </View>
             </RadioButton.Group>
             {/* </View> */}
@@ -191,18 +190,18 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
                             
 
             <TouchableOpacity 
-                style = {{borderColor: 'black', backgroundColor: 'lightgreen', borderWidth: 1}}      
+                style = {styles.approveBtn}      
                 onPress={() =>_addMarker()}>
-                <Text style={{fontSize: 20, color: 'red'}}>לחץ כדי להוסיף נק' עניין</Text>
+                <Text style={styles.txtApprove}> הוספת נק' עניין חדשה</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-                style = {{borderColor: 'black', backgroundColor: 'red', alignItems: 'center', borderWidth: 1, marginTop: 4, width: 100}}      
+                style = {styles.cancelBtn}      
                 onPress={() =>pop()}>
                 <Text style={{fontSize: 20, color: 'black'}}>ביטול</Text>
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
         </ScrollView>
+        </View>
       );
     }
     const styles = StyleSheet.create({
@@ -210,8 +209,11 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
           flex: 1,
           alignItems: 'center',
           backgroundColor: '#bbded6',
-          // position: 'absolute',
-          
+          justifyContent: 'center',
+        },
+        marker: {
+          width: 32, 
+          height: 32
         },
         selectButton: {
           borderRadius: 5,
@@ -220,12 +222,35 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
           backgroundColor: '#8ac6d1',
           alignItems: 'center',
           justifyContent: 'center',
-          margin: 20
+          margin: 20,
+          marginLeft: 90
+        },
+        txtApprove: {
+          fontSize: 20, 
+          color: 'red', 
+          textAlign: 'center'
         },
         buttonText: {
           color: 'white',
           fontSize: 18,
           fontWeight: 'bold',
+          borderRadius: 5
+        },
+        approveBtn: {
+          borderColor: 'black', 
+          backgroundColor: 'lightgreen', 
+          borderWidth: 1,
+          width: '80%',
+          textAlign: 'center'
+        },
+        cancelBtn: {
+          borderColor: 'black', 
+          backgroundColor: 'red', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          borderWidth: 1, 
+          marginTop: 8, 
+          width: '60%'
         },
         imageContainer: {
           marginTop: 30,
@@ -237,12 +262,14 @@ export function UploadScreen({route, navigation: { goBack, pop }}) {
         },
         imageBox: {
           width: 300,
-          height: 300
+          height: 300,
+          resizeMode: 'stretch',
         },
         textInput: {
             // height: 40,
             margin: 12,
             borderWidth: 1,
-            width: 200
+            width: '80%',
+            fontSize: 17
         }
       });

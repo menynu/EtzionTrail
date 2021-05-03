@@ -8667,85 +8667,85 @@ export const Trail2 =
                     ]
                 }
             },
-            {
-                "type": "Feature",
-                "properties": {
-                    "name": "עין סגמה",
-                    "time": "2020-08-14T03:35:19.303Z",
-                    "sym": "Waypoint"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        35.112934,
-                        31.6595691,
-                        856
-                    ]
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {
-                    "name": "טיילת הבנים",
-                    "time": "2020-08-14T04:21:36.082Z",
-                    "sym": "Waypoint"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        35.1230009,
-                        31.6597981,
-                        959
-                    ]
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {
-                    "name": "מגדל תצפית",
-                    "time": "2020-08-14T05:52:22.076Z",
-                    "sym": "Waypoint"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        35.1449706,
-                        31.6825491,
-                        990
-                    ]
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {
-                    "name": "מעין",
-                    "time": "2020-08-14T06:46:03.961Z",
-                    "sym": "Waypoint"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        35.1480779,
-                        31.6900743,
-                        933
-                    ]
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": {
-                    "name": "בור מים",
-                    "time": "2020-08-14T07:08:41.641Z",
-                    "sym": "Waypoint"
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        35.1509363,
-                        31.6842914,
-                        951
-                    ]
-                }
-            }
+            // {
+            //     "type": "Feature",
+            //     "properties": {
+            //         "name": "עין סגמה",
+            //         "time": "2020-08-14T03:35:19.303Z",
+            //         "sym": "Waypoint"
+            //     },
+            //     "geometry": {
+            //         "type": "Point",
+            //         "coordinates": [
+            //             35.112934,
+            //             31.6595691,
+            //             856
+            //         ]
+            //     }
+            // },
+            // {
+            //     "type": "Feature",
+            //     "properties": {
+            //         "name": "טיילת הבנים",
+            //         "time": "2020-08-14T04:21:36.082Z",
+            //         "sym": "Waypoint"
+            //     },
+            //     "geometry": {
+            //         "type": "Point",
+            //         "coordinates": [
+            //             35.1230009,
+            //             31.6597981,
+            //             959
+            //         ]
+            //     }
+            // },
+            // {
+            //     "type": "Feature",
+            //     "properties": {
+            //         "name": "מגדל תצפית",
+            //         "time": "2020-08-14T05:52:22.076Z",
+            //         "sym": "Waypoint"
+            //     },
+            //     "geometry": {
+            //         "type": "Point",
+            //         "coordinates": [
+            //             35.1449706,
+            //             31.6825491,
+            //             990
+            //         ]
+            //     }
+            // },
+            // {
+            //     "type": "Feature",
+            //     "properties": {
+            //         "name": "מעין",
+            //         "time": "2020-08-14T06:46:03.961Z",
+            //         "sym": "Waypoint"
+            //     },
+            //     "geometry": {
+            //         "type": "Point",
+            //         "coordinates": [
+            //             35.1480779,
+            //             31.6900743,
+            //             933
+            //         ]
+            //     }
+            // },
+            // {
+            //     "type": "Feature",
+            //     "properties": {
+            //         "name": "בור מים",
+            //         "time": "2020-08-14T07:08:41.641Z",
+            //         "sym": "Waypoint"
+            //     },
+            //     "geometry": {
+            //         "type": "Point",
+            //         "coordinates": [
+            //             35.1509363,
+            //             31.6842914,
+            //             951
+            //         ]
+            //     }
+            // }
         ]
 }
