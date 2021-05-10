@@ -12,6 +12,14 @@ import {
   Image,
   PermissionsAndroid
 } from "react-native";
+import FontAwesome, {
+  SolidIcons,
+  RegularIcons,
+  BrandIcons,
+  parseIconFromClassName
+} from "react-native-fontawesome";
+import auth from "@react-native-firebase/auth";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import BackgroundGeolocation from "@darron1217/react-native-background-geolocation";
 import { Trail1, Trail2, Trail3, Trail4 } from "../trails";
 import haversine from "haversine";
@@ -19,8 +27,9 @@ import Geolocation from "react-native-geolocation-service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 import Modal from "react-native-modal";
+import AlertModal from "../components/AlertModal";
 import MapView, { PROVIDER_GOOGLE, Geojson, Marker, AnimatedRegion, Polyline } from "react-native-maps";
-import { Icon } from "react-native-vector-icons";
+
 
 const { width, height } = Dimensions.get("window");
 const LATITUDE_DELTA = 0.009;
@@ -38,6 +47,11 @@ export class HomeScreen extends React.Component {
     // const { navigation, route } = this.props;
     this.state = {
       // trailCoords:  this.props.navigation.route.params,
+      locationAlert: false,
+      modalVisible2: false,
+      watchTrail: false,
+      playToggle: false,
+      recordFlag: false,
       currMarker: null,
       trailCords: [],
       tracksViewChanges: true,
@@ -54,7 +68,7 @@ export class HomeScreen extends React.Component {
       activeModal: null,
       infoModal: null,
       modalVisible: false,
-      Trail: Trail1, //represent the Trail json
+      Trail: null, //represent the Trail json
       latitude: 31.6600768,
       longitude: 35.1102883,
       marker: null,
@@ -71,9 +85,23 @@ export class HomeScreen extends React.Component {
         longitude: LONGITUDE,
         latitudeDelta: 0,
         longitudeDelta: 0
+      }),
+      startPt: ({
+        longitude: 35.100004076958,
+        latitude: 31.606495501781
+
+      }),
+      endPt: ({
+        longitude: null,
+        latitude: null
       })
     };
   }
+
+  handleCallback = (childData) => {
+    console.log("child data; ", childData);
+    // this.setState({data: childData})
+  };
 
   //get the user email from storage
   _retrieveData = async () => {
@@ -107,6 +135,7 @@ export class HomeScreen extends React.Component {
     });
 
     this._retrieveData();
+
 
     BackgroundGeolocation.getCurrentLocation(lastLocation => {
       let region = this.state.region;
@@ -150,6 +179,95 @@ export class HomeScreen extends React.Component {
       });
     });
 
+
+    BackgroundGeolocation.configure({
+      desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
+      stationaryRadius: 50,
+      distanceFilter: 10, //meters
+      notificationTitle: "Background tracking",
+      notificationText: "enabled",
+      //debug: true,
+      startOnBoot: false,
+      stopOnTerminate: true,
+      locationProvider: BackgroundGeolocation.DISTANCE_FILTER_PROVIDER, // DISTANCE_FILTER_PROVIDER for
+      interval: 10000,
+      fastestInterval: 5000,
+      activitiesInterval: 10000,
+      stopOnStillActivity: false,
+      // url: 'http://192.168.81.15:3000/location',
+      httpHeaders: {
+        "X-FOO": "bar"
+      },
+      // customize post properties
+      postTemplate: {
+        lat: "@latitude",
+        lon: "@longitude",
+        foo: "bar" // you can also add your own properties
+      }
+    });
+
+    BackgroundGeolocation.on("start", () => {
+      // service started successfully
+      // you should adjust your app UI for example change switch element to indicate
+      // that service is running
+      console.log("[DEBUG] BackgroundGeolocation has been started");
+      this.setState({ isRunning: true });
+    });
+
+    BackgroundGeolocation.on("stop", () => {
+      console.log("[DEBUG] BackgroundGeolocation has been stopped");
+      this.setState({ isRunning: false });
+    });
+
+    BackgroundGeolocation.on("authorization", status => {
+      console.log(
+        "[INFO] BackgroundGeolocation authorization status: " + status
+      );
+      if (status !== BackgroundGeolocation.AUTHORIZED) {
+        // we need to set delay after permission prompt or otherwise alert will not be shown
+        setTimeout(() =>
+          Alert.alert(
+            "האפליקציה דורשת שימוש בשירותי מיקום",
+            "על מנת לאפשר לאפליקציה להשתמש בשירותי המיקום של הטלפון וגם עבור הפעלתה ברקע של האפליקציה או מחוסר שימוש בעת הקלטות מסלול עליך לאשר זאת",
+            [
+              {
+                text: "מאשר/ת",
+                onPress: () => BackgroundGeolocation.showAppSettings()
+              },
+              {
+                text: "לא מאשר/ת",
+                onPress: () => console.log("No Pressed"),
+                style: "cancel"
+              }
+            ]
+          ), 1000);
+      }
+    });
+
+    BackgroundGeolocation.on("error", ({ message }) => {
+      Alert.alert("BackgroundGeolocation error", message);
+    });
+
+    BackgroundGeolocation.on("foreground", () => {
+      console.log("[INFO] App is in foreground");
+    });
+
+    BackgroundGeolocation.on("background", () => {
+      console.log("[INFO] App is in background");
+    });
+
+    BackgroundGeolocation.checkStatus(({ isRunning }) => {
+      this.setState({ isRunning });
+      if (isRunning) {
+        BackgroundGeolocation.start();
+      }
+    });
+
+    function logError(msg) {
+      console.log(`[ERROR] getLocations: ${msg}`);
+    }
+
+
     BackgroundGeolocation.on("stationary", (location) => {
       console.log("[DEBUG] BackgroundGeolocation stationary", location);
       BackgroundGeolocation.startTask(taskKey => {
@@ -172,32 +290,92 @@ export class HomeScreen extends React.Component {
     });
   }
 
+
   componentWillUnmount() {
     BackgroundGeolocation.events.forEach(event =>
       BackgroundGeolocation.removeAllListeners(event)
     );
   }
 
+
+  async handleSave() {
+    this.state.playToggle ? this.toggleTracking() : null;
+    await firestore().collection("Tracks").add({
+      track: this.state.routeCoordinates,
+      distance: this.state.distanceTravelled,
+      user: this.state.userEmail
+    }).then(this.setState({
+      routeCoordinates: [],
+      distance: 0
+    }));
+    this.setState({ playToggle: false });
+    alert("המסלול נשמר בהצלחה!, הצגתו תתאפשר בעדכון הבא");
+  }
+
   // function to save track to DB
   async saveTrack() {
     console.log("save track");
+
     if (this.state.distanceTravelled > 0) {
-      await firestore().collection("Tracks").add({
-        track: this.state.routeCoordinates,
-        distance: this.state.distanceTravelled,
-        user: this.state.userEmail
-      });
-      this.setState({
-        routeCoordinates: [],
-        distance: 0
-      });
-      alert('המסלול נשמר בהצלחה!, הצגתו תתאפשר בעדכון הבא')
+      Alert.alert(
+        "?האם ברצונך להפסיק את ההקלטה",
+        "?האם את/ה בטוח/ה",
+        [
+          { text: "כן", onPress: () => this.handleSave() },
+          { text: "לא", onPress: () => console.log("No item was removed"), style: "cancel" }
+        ],
+        {
+          cancelable: true
+        }
+      );
     }
   }
 
   toggleTracking() {
-    console.log("bg tracking enabled");
+    if (!this.state.userEmail) {
+      alert("בכדי להקליט עליך להתחבר למערכת");
+      return;
+    }
+    if (!this.state.locationAlert) {
+      console.log("got heree");
+      Alert.alert(
+        "הרשאת מיקום",
+        "שביל עציון משתמשת במידע על מיקמוך בכדי להקליט ולהציג את מסלולך על המפה גם כאשר האפליקציה עובדת ברקע. על מנת שנוכל לעשות זאת נצטרך את אישורך כדי לאפשר לאפליקציה לגשת לנתוני מיקומך גם כשהאפליקציה פועלת ברקע",
 
+        [
+          {
+            text: "אישור",
+            onPress: () => this.setState({ locationAlert: true })
+          },
+          {
+            text: "ביטול",
+            onPress: () => console.log("canceled"),
+            style: "cancel"
+          }
+          // { text: "OK", onPress: () => console.log("OK Pressed") }
+        ]
+      );
+      // this.setState({locationAlert: true})
+    }
+    if (!this.state.locationAlert)
+      return;
+
+    if (!this.state.recordFlag) {
+      this.setState({ recordFlag: true });
+      ToastAndroid.show("הקלטת מסלול פעילה", ToastAndroid.SHORT);
+    } else {
+      this.setState({ recordFlag: false });
+    }
+
+
+    console.log("bg tracking enabled");
+    this.state.playToggle ? this.setState({ playToggle: false }) : this.setState({ playToggle: true });
+    // <UseTracking parentCallback = {this.handleCallback}
+    //   latitude= {this.state.latitude}
+    //   longitude = {this.state.longitude}
+    //   region = {this.state.region}
+    //   coordinate ={this.state.coordinates}
+    // />
     BackgroundGeolocation.checkStatus(({ isRunning, locationServicesEnabled, authorization }) => {
       if (isRunning) {
         BackgroundGeolocation.stop();
@@ -351,7 +529,7 @@ export class HomeScreen extends React.Component {
           <Text> {currMarker.info} </Text>
           <Text>נוצר ע"י {currMarker.email}</Text>
           <Image source={{ uri: this.state.markerUrl }}
-                 style={{ width: 400, height: 300, justifyContent: "center", flex: 1,resizeMode: 'stretch'}}
+                 style={{ width: 400, height: 300, justifyContent: "center", flex: 1, resizeMode: "stretch" }}
           />
         </View>
       </Modal>
@@ -359,16 +537,42 @@ export class HomeScreen extends React.Component {
   }
 
 //go to trails
+  selectTrail = trail => {
+    console.log("text: ", trail);
+    // this.setState({watchTrail: false})
+    this.setState({ Trail: trail });
+    if (Trail1) {
+      console.log("trail1");
+      // return(
+      this.setState({
+        startPt: (35.100004076958,
+          31.606495501781)
+      });
+      this.setState({
+        endPt: (35.115287303925,
+          31.647938093268)
+      });
+
+      // )
+    }
+
+
+  };
 
   goToTrail() {
-    if (this.map){
+
+    this.state.watchTrail ? this.setState({ watchTrail: false }) : this.setState({ watchTrail: true });
+
+    if (this.map && !this.state.watchTrail) {
       this.map.animateToRegion({
-          latitude: 31.634666947529958,
-          longitude: 35.16990227624774,
-          latitudeDelta: 0.2260742636282238,
-          longitudeDelta: 0.14534857124089484
-      })
+        latitude: 31.634666947529958,
+        longitude: 35.16990227624774,
+        latitudeDelta: 0.2260742636282238,
+        longitudeDelta: 0.14534857124089484
+      });
     }
+
+
   }
 
 //function move to current location
@@ -412,29 +616,104 @@ export class HomeScreen extends React.Component {
     this.requestGeoLocationPermission;
   };
 
+  handleTrail = text => {
+    this.setState({ Trail: text });
+  };
+
   stopRendering = () => {
     this.setState({ tracksViewChanges: false });
   };
 
   render() {
-
     return (
 
       <View style={styles.container}>
+        {/* Only auth users can record the trails - for test - in future maybe only admin */}
+        <View style={{ flexDirection: "row", alignSelf: "flex-end", margin: 15, marginTop: 55 }}>
+
+          <TouchableOpacity onPress={() => this.toggleTracking()}>
+            {!this.state.playToggle ? (<MaterialIcons name="play-circle-filled" size={25} color="red"/>) :
+              <MaterialIcons name="pause" size={25} color="red"/>}
+          </TouchableOpacity>
+          {(this.state.distanceTravelled > 0) ? <TouchableOpacity onPress={() => this.saveTrack()}>
+            <MaterialIcons name="stop" size={25} color="red"/>
+          </TouchableOpacity> : null}
+        </View>
+
         {/* Next method to make custom current location button */}
-        <TouchableOpacity onPress={this.goToTrail.bind(this)} style={[{
-          width: 60, height: 60,
-          position: "absolute", bottom: 20, right: 20, borderRadius: 30, backgroundColor: "#d2d2d2"
-        }]}>
-          <Text>follow</Text>
+        <TouchableOpacity onPress={this.goToTrail.bind(this)} style={{
+          width: 60,
+          height: 60,
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          borderRadius: 30,
+          backgroundColor: "#d2d2d2",
+          alignItems: "center",
+          justifyContent: "center",
+          alignSelf: "center"
+        }}>
+
+          <Image source={require("../assets/trailsbtn.png")} style={styles.categoryIcon}/>
         </TouchableOpacity>
-        <Text style={{ backgroundColor: "white" }}>
-          <TouchableOpacity onPress={() => this.toggleTracking()}><Text
-            style={{ marginRight: 20 }}>הפעל</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => this.toggleTracking()}><Text
-            style={{ marginRight: 20 }}>עצור</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => this.saveTrack()}><Text
-            style={{ marginRight: 20 }}>שמור</Text></TouchableOpacity></Text>
+
+        {this.state.watchTrail ? <View style={styles.categoryContainer}>
+          <TouchableOpacity onPress={() => {
+            this.selectTrail(Trail1), this.map.animateToRegion({
+              latitude: 31.623459643104475,
+              longitude: 35.119468700140715,
+              latitudeDelta: 0.11305099010432329,
+              longitudeDelta: 0.07267411798238754
+            });
+          }} style={styles.categoryBtn}>
+            <View style={styles.categoryIcon}>
+              <Image source={require("../assets/trail1.png")} style={styles.categoryIcon}/>
+            </View>
+
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            this.selectTrail(Trail2), this.map.animateToRegion({
+              latitude: 31.664841294355234,
+              longitude: 35.13709148392081,
+              latitudeDelta: 0.1130006827056782,
+              longitudeDelta: 0.07267411798238754
+            });
+          }}
+                            style={styles.categoryBtn}>
+            <View style={styles.categoryIcon}>
+              <Image source={require("../assets/trail2.png")} style={styles.categoryIcon}/>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => {
+            this.selectTrail(Trail3) , this.map.animateToRegion({
+              latitude: 31.62098228329318,
+              longitude: 35.18275575712323,
+              latitudeDelta: 0.226108091912959,
+              longitudeDelta: 0.14534857124090195
+            });
+          }} style={styles.categoryBtn}>
+            <View style={styles.categoryIcon}>
+              <Image source={require("../assets/trail3.png")} style={styles.categoryIcon}/>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => {
+            this.selectTrail(Trail4), this.map.animateToRegion({
+              latitude: 31.634349083365052,
+              longitude: 35.230283830314875,
+              latitudeDelta: 0.11303775760035606,
+              longitudeDelta: 0.07267411798238754
+            });
+          }} style={styles.categoryBtn}>
+            <View style={styles.categoryIcon}>
+              <Image source={require("../assets/trail4.png")} style={styles.categoryIcon}/>
+            </View>
+          </TouchableOpacity>
+
+        </View> : null}
+
+
         <MapView
           provider={PROVIDER_GOOGLE}
           style={{
@@ -486,8 +765,8 @@ export class HomeScreen extends React.Component {
                   <Image source={require("../assets/alert.png")} style={styles.marker}/> :
                   marker.img == "info" ?
                     <Image source={require("../assets/info.png")} style={styles.marker}/> :
-                    <Image source={require("../assets/marker.png")}  onLoad={this.stopRendering}
-                      style={styles.marker}/>
+                    <Image source={require("../assets/marker.png")} onLoad={this.stopRendering}
+                           style={styles.marker}/>
                 }
                 <MapView.Callout //tooltip
                   onPress={() => this.setState({ infoModal: "true", markerUrl: marker.imageUri })}
@@ -496,38 +775,51 @@ export class HomeScreen extends React.Component {
               </MapView.Marker>
             ))
           }
+          {this.state.Trail ? <Geojson
+            geojson={this.state.Trail}
+            strokeColor="lightblue"
+            fillColor="green"
+            strokeWidth={3}
+            onPress={() => {
+              console.log("clicked");
+            }}
+          /> : null}
 
-          <Geojson
-            geojson={Trail1}
-            strokeColor="red"
-            fillColor="green"
-            strokeWidth={3}
-          />
-          <Geojson
-            geojson={Trail2}
-            strokeColor="yellow"
-            fillColor="green"
-            strokeWidth={3}
-          />
-          <Geojson
-            geojson={Trail3}
-            strokeColor="blue"
-            fillColor="green"
-            strokeWidth={3}
-          />
-          <Geojson
-            geojson={Trail4}
-            strokeColor="green"
-            fillColor="green"
-            strokeWidth={3}
-          />
+
           {/* Create the recorded track line */}
           <Polyline coordinates={this.state.routeCoordinates} strokeWidth={5}/>
+          {/*
+          {this.state.Trail?  <Marker
+            ref={marker => {
+              this.marker = marker;
+            }}
+            title='התחלה'
+            coordinate={this.state.startPt}
+          /> : null} */}
+
+
           {/* <Marker.Animated
             ref={marker => {
               this.marker = marker;
             }}
-            coordinate={this.state.coordinate}
+            title='התחלה'
+            coordinate={this.state.startPt}
+          /> */}
+
+          {/* <Marker.Animated
+            ref={marker => {
+              this.marker = marker;
+            }}
+            title='התחלה'
+            coordinate={this.state.startPt}
+          >
+          </Marker.Animated>
+          <Marker.Animated
+            ref={marker => {
+              this.marker = marker;
+            }}
+            title= 'סיום'
+            coordinate={this.state.endPt}
           >
           </Marker.Animated> */}
         </MapView>
@@ -576,9 +868,37 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5
   },
+  categoryContainer: {
+    flexDirection: "row",
+    width: "90%",
+    alignSelf: "center",
+    marginTop: 25,
+    marginBottom: 10
+  },
+  categoryBtn: {
+    flex: 1,
+    width: "30%",
+    marginHorizontal: 0,
+    alignSelf: "center"
+  },
+  categoryIcon: {
+    borderWidth: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    width: 70,
+    height: 70,
+    backgroundColor: "#fdeae7" /* '#FF6347' */,
+    borderRadius: 50
+  },
+  categoryBtnTxt: {
+    alignSelf: "center",
+    marginTop: 5,
+    color: "#de4f35"
+  },
   newPtModal: {
     justifyContent: "center",
-    alignContent: 'center',
+    alignContent: "center",
     width: "70%",
     height: "10%",
     backgroundColor: "lightblue",
@@ -596,7 +916,12 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   marker: {
-    width: 30, 
+    width: 30,
     height: 30
+  },
+  iconStyle: {
+    fontSize: 40,
+    marginTop: 30,
+    color: "black"
   }
 });

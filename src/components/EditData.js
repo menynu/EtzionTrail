@@ -1,7 +1,7 @@
 import React from "react";
-import { Text, TextInput, View, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
+import { Text, TextInput, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import firestore from "@react-native-firebase/firestore";
-
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 /*
     Edit trail info data by admin user 
 */
@@ -49,20 +49,13 @@ const Edit = (props) => {
   };
   return (
     <>
-      <Pressable
-        onPress={pressed}
-        item={props.trailCollection}
-        hitSlop={{ top: 10, bottom: 10, right: 10, left: 10 }}
-        style={({ pressed }) => [
-          { backgroundColor: pressed ? "#dddddd" : props.color },
-          styles.button,
-          { ...props.style }
+        <TouchableOpacity onPress={pressed}>
+        <View style={{alignContent: 'center', alignItems: 'center'}}>
+        <MaterialIcons name="edit" size={35} color="red"/>
 
-        ]}
+        </View>
+        </TouchableOpacity>
 
-      >
-        <Text style={styles.text}> {props.title}</Text>
-      </Pressable>
       {editable && <View>
         <Text style={styles.text}> עריכת מידע עבור המקטע:</Text>
         <TextInput
@@ -106,10 +99,5 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: "center"
   },
-  button: {
-    width: 150,
-    height: 50,
-    alignItems: "center"
-  }
 });
 export default Edit;

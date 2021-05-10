@@ -1,12 +1,4 @@
 {
   "name": "EtzionTrail",
-  "displayName": "EtzionTrail",
-  "expo": {
-    "name": "EtzionTrail",
-    "slug": "EtzionTrail",
-    "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ]
-  }
+  "displayName": "EtzionTrail"
 }

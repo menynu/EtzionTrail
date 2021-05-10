@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
@@ -85,7 +85,7 @@ export class Registration extends Component {
 
 
       <View style={styles.container}>
-        <Image source={require('../assets/logo.png')} style={styles.image}/>
+        <Image source={require("../assets/logo.png")} style={styles.image}/>
         <TextInput
           style={styles.input}
           underlineColorAndroid="transparent"
@@ -108,7 +108,7 @@ export class Registration extends Component {
           placeholder="סיסמה"
           placeholderTextColor="black"
           autoCapitalize="none"
-          textAlign= 'right'
+          textAlign='right'
           secureTextEntry={true}
           onChangeText={this.handlePassword}
         />
@@ -117,6 +117,22 @@ export class Registration extends Component {
           onPress={() => this.Validate()}>
           <Text style={styles.submitButtonText}> להרשמה </Text>
         </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignSelf: "center" }}>
+          <Text> השימוש באפליקציה מהווה הסכמה </Text>
+          <Text style={{ fontWeight: "bold" }}
+                onPress={() => Linking.openURL("https://etzion-trail.flycricket.io/terms.html")}>
+            לתנאי השימוש
+          </Text>
+
+        </View>
+        <View style={{ flexDirection: "row", alignSelf: "center" }}>
+          <Text> ולתנאי </Text>
+          <Text style={{ fontWeight: "bold" }}
+                onPress={() => Linking.openURL("https://etzion-trail.flycricket.io/privacy.html")}>
+            הפרטיות
+          </Text>
+        </View>
+
       </View>
 
     );
@@ -126,7 +142,7 @@ export class Registration extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "center"
     // alignItems: "center",
     // backgroundColor: "#F5FCFF"
   },
@@ -148,14 +164,15 @@ const styles = StyleSheet.create({
     margin: 15,
     alignItems: "center",
     height: 40,
-    borderRadius:10,
-    backgroundColor : "#537cdb",
+    borderRadius: 10,
+    backgroundColor: "#537cdb"
   },
   image: {
-    height: 280,
-    width: 350, 
-    resizeMode: 'stretch',
-    marginLeft: 15
+    alignSelf: "center",
+    height: 180,
+    width: 250
+    // resizeMode: 'stretch',
+    // marginLeft: 15
   },
   submitButtonText: {
     color: "white"

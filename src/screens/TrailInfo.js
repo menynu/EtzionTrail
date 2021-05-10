@@ -29,9 +29,8 @@ export function TrailInfo({ route, navigation }) {
         <View>
           {admin && <Edit
             onPressFunction={handlePress}
-            title={"ערוך מידע"}
             style={{ margin: 10 }}
-            color={"red"}
+            color={"white"}
             trailCollection={key}
           />}
           <Text style={styles.textTitle}> {name}</Text>
@@ -43,52 +42,53 @@ export function TrailInfo({ route, navigation }) {
                               onPress={() => Linking.openURL(gallery)}>
               לגלריה ותמונות נוספות
             </Text>}
-            {/* <Button title="test" onPress={() => navigation.navigate("HomeScreen", { coords: track })}/> */} 
+            {/* <Button title="test" onPress={() => navigation.navigate("HomeScreen", { coords: track })}/> */}
           </View>
         </View>
       </ScrollView>
     </>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "center"
   },
   textTitle: {
     fontSize: 35,
-    textAlign: 'center',
-    color: '#262626',
-    shadowColor: 'blue',
-    borderColor: 'blue',
+    textAlign: "center",
+    color: "#262626",
+    shadowColor: "blue",
+    borderColor: "blue",
     margin: 10
   },
   textInfo: {
     fontSize: 19,
     margin: 10,
     marginRight: 10,
-    color: '#262626',
-    textAlign: 'right',
+    color: "#262626",
+    textAlign: "right"
   },
   linkGallery: {
-    color: 'blue',
-    textAlign: 'center',
+    color: "blue",
+    textAlign: "center",
     fontSize: 17,
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: 10
   },
   button: {
     padding: 10,
     margin: 15,
     alignItems: "center",
     height: 40,
-    borderRadius:10,
-    backgroundColor : "#537cdb",
+    borderRadius: 10,
+    backgroundColor: "#537cdb"
   },
   image: {
     height: 280,
-    width: '100%', 
-    resizeMode: 'stretch',
-  },
-  
+    width: "100%",
+    resizeMode: "stretch"
+  }
+
 });

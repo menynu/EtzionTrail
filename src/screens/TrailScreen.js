@@ -71,39 +71,39 @@ const styles = StyleSheet.create({
     elevation: 1,
     marginLeft: 5,
     marginRight: 5,
-    marginTop: 10,
+    marginTop: 10
   },
   txtTrailName: {
     fontSize: 18,
-    color: '#599c46'
+    color: "#599c46"
   },
   textTitle: {
     fontSize: 35,
-    textAlign: 'center',
-    color: '#262626',
-    shadowColor: 'blue',
-    borderColor: 'blue',
+    textAlign: "center",
+    color: "#262626",
+    shadowColor: "blue",
+    borderColor: "blue",
     margin: 10
   },
   txtLink: {
-    color: 'blue',
+    color: "blue",
     fontSize: 17,
     marginBottom: 5
   },
   txtName: {
     fontSize: 12,
-    textAlign: 'center'
+    textAlign: "center"
   },
   imgTrail: {
-    width: "90%", 
+    width: "90%",
     height: 200,
-    resizeMode: 'stretch',
-    marginTop: 7,
+    resizeMode: "stretch",
+    marginTop: 7
   },
   listView: {
     flex: 1,
-    alignItems: "center", 
-    justifyContent: "center" 
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Text, View, StyleSheet, Pressable, TouchableOpacity, ScrollView, Image, Alert } from "react-native";
 import firestore from "@react-native-firebase/firestore";
 import { Card } from "./Card";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const ApproveMarkers = (props) => {
   const [editable, setEditable] = React.useState(false);
@@ -33,17 +34,13 @@ const ApproveMarkers = (props) => {
         // setLoading(false);
       });
 
-    console.log("one shot? : ", markers);
   };
   const Approve = async (marker) => {
     console.log("marker id: ", marker.key);
     const myMarker = await markerRef.doc(marker.key).get();
     let updateMarker = markerRef.doc(marker.key);
     if (myMarker) {
-      console.log("MARKER???");
-      console.log("Document data:", myMarker.data());
-      // setTrailInfo(doc.data().info)
-      updateMarker.update({ approved: true }).then(alert("Approved"));
+      updateMarker.update({ approved: true }).then(alert("אושר"));
     }
 
   };
@@ -55,7 +52,7 @@ const ApproveMarkers = (props) => {
       "האם אתה בטוח?",
       [
         { text: "מחק", onPress: async () => await updateMarker.delete() },
-        { text: "בטל", onPress: () => console.log("No item was removed"), style: "cancel" }
+        { text: "בטל", onPress: () => console.log("בוטל"), style: "cancel" }
       ],
       {
         cancelable: true
@@ -66,18 +63,14 @@ const ApproveMarkers = (props) => {
 
   return (
     <>
-      <Pressable
-        onPress={pressed}
-        // item= {props.trailCollection}
-        hitSlop={{ top: 10, bottom: 10, right: 10, left: 10 }}
-        style={({ pressed }) => [
-          { backgroundColor: pressed ? "#dddddd" : props.color },
-          styles.button,
-          { ...props.style }
-        ]}
-      >
+       <TouchableOpacity onPress={pressed} style={{alignItems: 'center'}}>
+        <View style={{alignContent: 'center', alignItems: 'center', flexDirection: 'row'}}>
+        <MaterialIcons name="add" size={35} color="red"/>
         <Text style={{ color: "red", fontSize: 15, alignContent: "center" }}> לחץ להוספה\עדכון נק עניין</Text>
-      </Pressable>
+        </View>
+        </TouchableOpacity>
+       
+      
       {editable && <View>
         <Text>Test </Text>
         <ScrollView style={{ height: 400 }}>
