@@ -1,10 +1,10 @@
 import * as React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Image} from "react-native";
 
 export function SplashScreen() {
   return (
     <View>
-      <Text>Loading...</Text>
+      <Image source={require("../assets/waitingLogo.png")} style={{width: '100%', height: '100%', resizeMode: "cover"}}/>
     </View>
   );
 }

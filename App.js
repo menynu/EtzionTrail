@@ -9,7 +9,8 @@ import {
   Registration,
   TrailScreen,
   UploadScreen,
-  TrailInfo
+  TrailInfo,
+  LocationAlert
 } from "./src/screens";
 import { NavigationContainer } from "@react-navigation/native";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
@@ -73,6 +74,12 @@ function TrailStack() {
 export function MapStack() {
   return (
     <StackMap.Navigator>
+      <StackMap.Screen
+        name="Alert"
+        component={LocationAlert}
+        options={{
+          headerShown: false
+        }}/>
       <StackMap.Screen
         name="HomeScreen"
         component={HomeScreen}
@@ -182,14 +189,16 @@ export default function App({ navigation }) {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        <Tab.Navigator screenOptions={{ headerShown: false }}>
+        <Tab.Navigator screenOptions={{ headerShown: false, tabBarVisible: false }}>
           {state.isLoading ? (
             // We haven't finished checking for the token yet
             <StackMap.Screen
               name="Splash"
               component={SplashScreen}
-              options={{
-                headerShown: false
+              
+              screenOptions={{
+                headerShown: false,
+                tabBarVisible: false
               }}/>
           ) : state.userToken == null ? (
             <>

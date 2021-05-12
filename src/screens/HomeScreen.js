@@ -10,15 +10,8 @@ import {
   TouchableOpacity,
   ToastAndroid,
   Image,
-  PermissionsAndroid
+  PermissionsAndroid,
 } from "react-native";
-import FontAwesome, {
-  SolidIcons,
-  RegularIcons,
-  BrandIcons,
-  parseIconFromClassName
-} from "react-native-fontawesome";
-import auth from "@react-native-firebase/auth";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import BackgroundGeolocation from "@darron1217/react-native-background-geolocation";
 import { Trail1, Trail2, Trail3, Trail4 } from "../trails";
@@ -27,8 +20,7 @@ import Geolocation from "react-native-geolocation-service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 import Modal from "react-native-modal";
-import AlertModal from "../components/AlertModal";
-import MapView, { PROVIDER_GOOGLE, Geojson, Marker, AnimatedRegion, Polyline } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Geojson, AnimatedRegion, Polyline } from "react-native-maps";
 
 
 const { width, height } = Dimensions.get("window");
@@ -117,7 +109,31 @@ export class HomeScreen extends React.Component {
     }
   };
 
-  componentDidMount() {
+  async  requestLocationPermission(){
+    // Alert.alert('בשביל לקבל מידע עבור מיקומך גם בעת שימוש האפליקיה וגם ברקע נצטרך את אישורך להפעלת מיקום, לאחר אישורך מומלץ להפעיל מחדש את האפליקציה')
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          'title': 'הפעלת שירותי מיקום',
+          'message': 'שביל עציון משתמש בשירותי מיקום גם כאשר האפליקציה ברקע. על מנת לקבל את מיקומך עליך לאשר זאת '
+        }
+      )
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("You can use the location")
+        // alert("You can use the location");
+      } else {
+        console.log("location permission denied")
+        // alert("Location permission denied");
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+  }
+  
+
+  async componentDidMount() {
+    await this.requestLocationPermission()
     LogBox.ignoreLogs(["Animated: `useNativeDriver`"]);
 // get markers from DB
     markerRef.onSnapshot(querySnapshot => {
@@ -184,8 +200,8 @@ export class HomeScreen extends React.Component {
       desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
       stationaryRadius: 50,
       distanceFilter: 10, //meters
-      notificationTitle: "Background tracking",
-      notificationText: "enabled",
+      notificationTitle: "הקלטת מסלול ברקע",
+      notificationText: "פעיל",
       //debug: true,
       startOnBoot: false,
       stopOnTerminate: true,
@@ -211,7 +227,7 @@ export class HomeScreen extends React.Component {
       // you should adjust your app UI for example change switch element to indicate
       // that service is running
       console.log("[DEBUG] BackgroundGeolocation has been started");
-      this.setState({ isRunning: true });
+      // this.setState({ isRunning: true });
     });
 
     BackgroundGeolocation.on("stop", () => {
@@ -248,16 +264,16 @@ export class HomeScreen extends React.Component {
       Alert.alert("BackgroundGeolocation error", message);
     });
 
-    BackgroundGeolocation.on("foreground", () => {
-      console.log("[INFO] App is in foreground");
-    });
+    // BackgroundGeolocation.on("foreground", () => {
+    //   console.log("[INFO] App is in foreground");
+    // });
 
-    BackgroundGeolocation.on("background", () => {
-      console.log("[INFO] App is in background");
-    });
+    // BackgroundGeolocation.on("background", () => {
+    //   console.log("[INFO] App is in background");
+    // });
 
     BackgroundGeolocation.checkStatus(({ isRunning }) => {
-      this.setState({ isRunning });
+      // this.setState({ isRunning });
       if (isRunning) {
         BackgroundGeolocation.start();
       }
@@ -308,7 +324,7 @@ export class HomeScreen extends React.Component {
       routeCoordinates: [],
       distance: 0
     }));
-    this.setState({ playToggle: false });
+    this.setState({ playToggle: false, isRunning: false });
     alert("המסלול נשמר בהצלחה!, הצגתו תתאפשר בעדכון הבא");
   }
 
@@ -345,7 +361,7 @@ export class HomeScreen extends React.Component {
         [
           {
             text: "אישור",
-            onPress: () => this.setState({ locationAlert: true })
+            onPress: () => {this.setState({ locationAlert: true})}
           },
           {
             text: "ביטול",
@@ -360,11 +376,12 @@ export class HomeScreen extends React.Component {
     if (!this.state.locationAlert)
       return;
 
-    if (!this.state.recordFlag) {
-      this.setState({ recordFlag: true });
+    if (!this.state.recordFlag && this.state.locationAlert) {
+      this.setState({ recordFlag: true});
+      // this.setState({isRunning: true})
       ToastAndroid.show("הקלטת מסלול פעילה", ToastAndroid.SHORT);
     } else {
-      this.setState({ recordFlag: false });
+      this.setState({ recordFlag: false});
     }
 
 
@@ -427,9 +444,6 @@ export class HomeScreen extends React.Component {
     this.setState({ modalVisible: visible });
   };
 
-  requestGeoLocationPermission = () => {
-    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-  };
 
   getMapRegion = () => ({
     latitude: this.state.latitude,
@@ -576,24 +590,24 @@ export class HomeScreen extends React.Component {
   }
 
 //function move to current location
-  gotToMyLocation() {
-    Geolocation.getCurrentPosition(
-      ({ coords }) => {
-        // console.log("curent location: ", coords)
-        if (this.map) {
-          // console.log("curent location: ", coords)
-          this.map.animateToRegion({
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005
-          });
-        }
-      }, //on error:
-      () => alert("Error: Are location services on?"),
-      { enableHighAccuracy: true }
-    );
-  }
+  // gotToMyLocation() {
+  //   Geolocation.getCurrentPosition(
+  //     ({ coords }) => {
+  //       // console.log("curent location: ", coords)
+  //       if (this.map) {
+  //         // console.log("curent location: ", coords)
+  //         this.map.animateToRegion({
+  //           latitude: coords.latitude,
+  //           longitude: coords.longitude,
+  //           latitudeDelta: 0.005,
+  //           longitudeDelta: 0.005
+  //         });
+  //       }
+  //     }, //on error:
+  //     () => alert("Error: Are location services on?"),
+  //     { enableHighAccuracy: true }
+  //   );
+  // }
 
 
   onMarkerPress = (mapEventData, marker) => {
