@@ -66,6 +66,8 @@ const Edit = (props) => {
           placeholder={"עריכת מידע עבור המקטע"}
           value={trailInfo}
           onChangeText={setTrailInfo}
+          color = '#333'
+          placeholderTextColor = "#666"
         />
         <Text style={styles.text}> הוספת לינק לגלריית תמונות:</Text>
         <TextInput
@@ -76,6 +78,8 @@ const Edit = (props) => {
           placeholder={"לינק לגלריית תמונות"}
           value={link}
           onChangeText={setLink}
+          color = '#333'
+          placeholderTextColor = "#666"
         />
         <TouchableOpacity
           style={{ borderColor: "black", backgroundColor: "lightgreen", borderWidth: 1 }}

@@ -57,7 +57,7 @@ export function SignInScreen({ navigation }) {
         setToken(response.user);
         console.log("res user: ", response.user);
         AsyncStorage.setItem("userEmail", response.user.email);
-        signIn("Token", response.user.uid);
+        signIn("Token", JSON.stringify(response.user.uid));
 
       }
     } catch (e) {
@@ -76,19 +76,20 @@ export function SignInScreen({ navigation }) {
           value={email}
           onChangeText={setEmail}
           style={txtInput}
+          color = '#333'
+          placeholderTextColor = "#666"
         />
         <TextInput
           placeholder="סיסמה"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          textAlign='right'
+          color = '#333'
+          placeholderTextColor = "#666"
+          // textAlign='right'
           style={txtInput}
         />
         <View style={{ flexDirection: "row-reverse", margin: 15 }}>
-          {/* <Button title="כניסה" style={styles.button} onPress={() => {Validate()}}/>
-        <Text style={{margin: 8}}></Text>
-        <Button title="הרשמה" style={styles.button} onPress={() => navigation.navigate("Register")}/> */}
           <TouchableOpacity onPress={() => Validate()} style={styles.button}>
             <Text style={{
               justifyContent: "center", alignContent: "center", alignItems: "center", alignSelf: "center"
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "center"
+    alignSelf: "center",
 
   },
   txtInput: {
@@ -156,6 +157,6 @@ const styles = StyleSheet.create({
     width: "90%",
     borderColor: "gray",
     borderWidth: 1,
-    marginBottom: 5
+    marginBottom: 5,
   }
 });

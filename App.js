@@ -170,7 +170,9 @@ export default function App({ navigation }) {
         // After getting token, we need to persist the token using `AsyncStorage`
         // In the example, we'll use a dummy token
         console.log("Sign in data:", data);
-
+        AsyncStorage.getItem("userName", (err, result) => {
+          console.log("user data is: ", result);
+        });
         dispatch({ type: "SIGN_IN", token: "dummy-auth-token" });
       },
       signOut: () => dispatch({ type: "SIGN_OUT" }),

@@ -5,10 +5,24 @@ import auth from "@react-native-firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApproveMarkers from "../components/ApproveMarkers";
 import { WebView } from "react-native-webview";
+import firestore from "@react-native-firebase/firestore";
+
 
 export function ProfileScreen() {
+
   const { signOut } = React.useContext(AuthContext);
   const [admin, setAdmin] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [name, setName] = React.useState("");
+
+
+
+  // React.useEffect(async () => {
+   
+  // }, []);
+console.log('display name? ', auth().currentUser.displayName)
+  // auth().currentUser.displayName
+
   //get the data of current user.
   AsyncStorage.getItem("userData", (err, result) => {
     console.log("user data is: ", result);
@@ -27,7 +41,7 @@ export function ProfileScreen() {
       {admin && <ApproveMarkers/>}
       <ScrollView>
         {auth().currentUser.email ?
-          <Text style={{ textAlign: "center", fontSize: 18 }}>{auth().currentUser.email} ברוך שובך</Text> : null}
+          <Text style={{ textAlign: "center", fontSize: 18 }}>{name} ברוך שובך</Text> : null}
         {console.log("auth is:", auth().currentUser)}
         {/* <Text style={{ marginTop: 100 }}/> */}
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, Image,Alert } from "react-native";
+import { View, TouchableOpacity,Alert,ImageBackground,Text,StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function LocationAlert({navigation}) {
@@ -11,7 +11,6 @@ export function LocationAlert({navigation}) {
             Alert.alert(
               "הרשאת מיקום",
               "שביל עציון אוספת מידע אודות מיקומך בכדי להציג ולהקליט את המסלול גם כאשר האפליקציה עובדת ברקע. בכדי להמשיך עלייך לאשר לשביל עציון לגשת לנתוני מיקומך גם כשהאפליקציה פועלת ברקע",
-      
               [
                 {
                   text: "אישור",
@@ -37,14 +36,46 @@ export function LocationAlert({navigation}) {
     
     }, []);
 
-
    
-
-  
     
   return (
     <View>
-      <Image source={require("../assets/waitingLogo.png")} style={{width: '100%', height: '100%', resizeMode: "cover"}}/>
+      {/* { setTimeout(() => {
+      navigation.navigate("HomeScreen")
+    }, 1000)} */}
+      <ImageBackground source={require("../assets/waitingLogo.png")} style={{width: '100%', height: '100%', }}>
+      <TouchableOpacity
+          style={styles.button}
+          onPress={() =>  navigation.navigate("HomeScreen")}>
+          <Text style={styles.submitButtonText}> למפה </Text>
+        </TouchableOpacity>
+        </ImageBackground>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+ 
+  button: {
+    height: 40,
+    width: 160,
+    bottom: 20,
+    borderRadius: 10,
+    backgroundColor: "#537cdb",
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    position: "absolute",
+
+    // right: 20,
+
+  
+
+
+
+  },
+
+});

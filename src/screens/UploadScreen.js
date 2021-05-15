@@ -174,6 +174,8 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
             placeholder={"כותרת"}
             value={markerTitle}
             onChangeText={setMarkerTitle}
+            color = '#333'
+            placeholderTextColor = "#666"
           />
           <TextInput
             style={styles.textInput}
@@ -184,6 +186,8 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
             placeholder={"מידע נוסף"}
             value={markerInfo}
             onChangeText={setMarkerInfo}
+            color = '#333'
+            placeholderTextColor = "#666"
           />
 
 

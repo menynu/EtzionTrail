@@ -13,7 +13,8 @@ export class Registration extends Component {
     this.state = {
       email: "",
       password: "",
-      userData: {}
+      userData: {},
+      name: '',
     };
   }
 
@@ -22,23 +23,23 @@ export class Registration extends Component {
     console.log("set user register: ", user);
     try {
       await AsyncStorage.setItem("userData", JSON.stringify(user));
+      await AsyncStorage.setItem("userName", this.state.name);
     } catch (error) {
       console.log("Something went wrong", error);
     }
+
   }
 
   handleEmail = text => {
     this.setState({ email: text });
   };
 
-  handlePassword = text => {
-    this.setState({ password: text });
+  handleName = text => {
+    this.setState({ name: text });
   };
 
-  inputValueUpdate = (val, prop) => {
-    const state = this.state;
-    state[prop] = val;
-    this.setState(state);
+  handlePassword = text => {
+    this.setState({ password: text });
   };
 
   Validate() {
@@ -60,16 +61,22 @@ export class Registration extends Component {
   }
 
   async Register(Email, Password) {
+    console.log('the name is:  ', this.state.name)
     try {
-      let res = await auth().createUserWithEmailAndPassword(Email, Password);
+      let res = await auth().createUserWithEmailAndPassword(Email, Password)
       if (res) {
         this.setState({ userData: res.user });
         this.storeToken(res.user);
         console.log("the res data user: ", res.user);
         console.log(this.state.userData);
         console.log("user login id:", res.user.uid);
+        console.log('EMAIL : ', this.state.email, 'NAME: ', this.state.name)
+        const user = auth().currentUser;
+         user.updateProfile({
+          displayName: this.state.name
+        })
         usersRef.add({
-          Name: this.state.Name,
+          Name: this.state.name,
           Email: this.state.email
         });
         this.props.navigation.navigate("SignIn", res);
@@ -90,23 +97,26 @@ export class Registration extends Component {
           style={styles.input}
           underlineColorAndroid="transparent"
           placeholder="שם"
-          placeholderTextColor="black"
+          color = '#333'
+          placeholderTextColor = "#666"
           autoCapitalize="none"
-          onChangeText={(val) => this.inputValueUpdate(val, "שם")}
+          onChangeText={this.handleName}
         />
         <TextInput
           style={styles.input}
           underlineColorAndroid="transparent"
           placeholder="אימייל"
-          placeholderTextColor="black"
           autoCapitalize="none"
+          color = '#333'
+          placeholderTextColor = "#666"
           onChangeText={this.handleEmail}
         />
         <TextInput
           style={styles.input}
           underlineColorAndroid="transparent"
           placeholder="סיסמה"
-          placeholderTextColor="black"
+          color = '#333'
+          placeholderTextColor = "#666"
           autoCapitalize="none"
           textAlign='right'
           secureTextEntry={true}

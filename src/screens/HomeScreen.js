@@ -16,7 +16,6 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import BackgroundGeolocation from "@darron1217/react-native-background-geolocation";
 import { Trail1, Trail2, Trail3, Trail4 } from "../trails";
 import haversine from "haversine";
-import Geolocation from "react-native-geolocation-service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 import Modal from "react-native-modal";
@@ -201,7 +200,7 @@ export class HomeScreen extends React.Component {
       stationaryRadius: 50,
       distanceFilter: 10, //meters
       notificationTitle: "הקלטת מסלול ברקע",
-      notificationText: "פעיל",
+      notificationText: "פעילה",
       //debug: true,
       startOnBoot: false,
       stopOnTerminate: true,
@@ -349,7 +348,14 @@ export class HomeScreen extends React.Component {
 
   toggleTracking() {
     if (!this.state.userEmail) {
-      alert("בכדי להקליט עליך להתחבר למערכת");
+      Alert.alert("בכדי להקליט עליך להתחבר למערכת",
+      "במידה והתחברת בפעם הראשונה, מומלץ להפעיל מחדש את האפליקציה בכדי להנות מיתר הפונקציונליות" ,
+      [
+        {
+          text: 'הבנתי',
+        }
+      ]
+      )
       return;
     }
     if (!this.state.locationAlert) {
