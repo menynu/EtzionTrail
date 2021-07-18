@@ -39,7 +39,7 @@ function AuthStack() {
           options={{
             title: 'הרשמה',
             headerStyle: {
-              backgroundColor: '#f4511e',
+              backgroundColor: '#537cdb',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
@@ -101,11 +101,9 @@ export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
-      // readData()
+
       switch (action.type) {
         case "RESTORE_TOKEN":
-          console.log("user token for restore token: ", action.token);
-          // console.log('AFTER: ',this.state.userData);
           return {
             ...prevState,
             userToken: action.token,
@@ -115,7 +113,6 @@ export default function App({ navigation }) {
         case "SIGN_IN":
           if (action.token) {
             AsyncStorage.setItem("userToken", action.token);
-            console.log("user token for signed in: ", action.token);
           }
           return {
             ...prevState,
@@ -123,10 +120,8 @@ export default function App({ navigation }) {
             userToken: action.token
           };
         case "SIGN_OUT":
-          // AsyncStorage.removeItem('userToken')
           AsyncStorage.clear();
           auth().signOut();
-          console.log("sign out remove token?: ", action.token);
           return {
             ...prevState,
             isSignout: true,
@@ -151,9 +146,7 @@ export default function App({ navigation }) {
       } catch (e) {
         // Restoring token failed
       }
-
-      // After restoring token, we may need to validate it in production apps
-
+      // After restoring token, we may need to validate it in production app
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       dispatch({ type: "RESTORE_TOKEN", token: userToken });
