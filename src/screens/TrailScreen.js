@@ -5,8 +5,6 @@ import { Card } from "../components/Card";
 import PropTypes from "prop-types";
 
 export function TrailScreen({ navigation }) {
-
-  const { containerStyle, txtInput } = styles;
   const [loading, setLoading] = useState(true); // Set loading to true on component mount
   const [trails, setTrails] = useState([]); // Initial empty array of trails
   useEffect(() => {

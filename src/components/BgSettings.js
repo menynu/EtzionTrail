@@ -91,35 +91,7 @@ const BgSettings = (props) => {
     console.log(`[ERROR] getLocations: ${msg}`);
   }
 
-  // handles dayly location changes.
-  //   const handleHistoricLocations = locations => {
-  //     let region = null;
-  //     const now = Date.now();
-  //     const latitudeDelta = 0.01;
-  //     const longitudeDelta = 0.01;
-  //     const durationOfDayInMillis = 24 * 3600 * 1000;
-
-  //     const locationsPast24Hours = locations.filter(location => {
-  //       return now - location.time <= durationOfDayInMillis;
-  //     });
-
-  //     if (locationsPast24Hours.length > 0) {
-  //       // asume locations are already sorted
-  //       const lastLocation =
-  //         locationsPast24Hours[locationsPast24Hours.length - 1];
-  //       region = Object.assign({}, lastLocation, {
-  //         latitudeDelta,
-  //         longitudeDelta
-  //       });
-  //     }
-  //     this.setState({ locations: locationsPast24Hours, region });
-  //   };
-
-
-  //   BackgroundGeolocation.getValidLocations(
-  //     handleHistoricLocations.bind(this),
-  //     logError
-  //   );
+ 
 
 };
 

@@ -72,7 +72,6 @@ const ApproveMarkers = (props) => {
        
       
       {editable && <View>
-        <Text>Test </Text>
         <ScrollView style={{ height: 400 }}>
           {
             markers.map((item, index) => (
@@ -80,20 +79,22 @@ const ApproveMarkers = (props) => {
               <View key={item.key}>
                 <Card>
 
-                  <Text
-                    key={item.key}
-                  >
-                    <Text style={styles.text}>
-                      {item.title} {item.key}
+                 
+                    <View style={{flexDirection:'column'}}>
+                    <Text style={{flexDirection:'column'}}>
+                      {item.title} 
                     </Text>
-                    {item.imageUri && <Image source={{ uri: item.imageUri }} style={{ height: 100, width: 200 }}/>}
                     <Text> {item.info} </Text>
-                  </Text>
+                    {item.imageUri && <Image source={{ uri: item.imageUri }} style={{ height: 100, width: 200 , flex: 1 }}/>}
+                    {/* <Text> {item.info} </Text> */}
+                  
+                    </View>
+                    
                   <TouchableOpacity onPress={() => Approve(item)}>
-                    <Text> לאשר</Text>
+                    <Text style={{color:'green'}}> לאשר</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => deleteMarker(item)}>
-                    <Text> מחק</Text>
+                    <Text  style={{color:'red'}}> מחק</Text>
                   </TouchableOpacity>
 
                 </Card>

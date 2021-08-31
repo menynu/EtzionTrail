@@ -86,7 +86,7 @@ export function SignInScreen({ navigation }) {
           secureTextEntry
           color = '#333'
           placeholderTextColor = "#666"
-          // textAlign='right'
+          textAlign='right'
           style={txtInput}
         />
         <View style={{ flexDirection: "row-reverse", margin: 15 }}>

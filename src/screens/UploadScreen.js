@@ -28,7 +28,6 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
   const [transferred, setTransferred] = useState(0);
   const [userEmail, setUserEmail] = useState(null);
   const [imageURI, setImageURI] = useState(null);
-  // const[markerID, setMarkerID] = useState(null)  // in order to get marker ID
   const [markerTitle, setMarkerTitle] = useState(null);
   const [markerInfo, setMarkerInfo] = useState(null);
   const [value, setValue] = React.useState("marker");
@@ -38,7 +37,6 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
 
   AsyncStorage.getItem("userData", (err, result) => {
     let mail = JSON.parse(result);
-    // this.setState({userMail: userEmail.email})
     setUserEmail(mail.email);
     console.log(userEmail);
   });
@@ -88,7 +86,7 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
       return;
     }
     const { uri } = image;
-    console.log("THE URI:", uri); //uri stands for the image location on device
+    // console.log("THE URI:", uri); //uri stands for the image location on device
     const filename = uri.substring(uri.lastIndexOf("/") + 1);
 
     console.log("file name is: ", filename);
@@ -149,7 +147,6 @@ export function UploadScreen({ route, navigation: { goBack, pop } }) {
               <Progress.Bar progress={transferred} width={300}/>
             </View>
           ) : null}
-          {/* <View style={{ flexDirection: 'row' ,fontSize: 10, margin: 10}}> */}
           <RadioButton.Group onValueChange={newValue => setValue(newValue)} value={value}>
             <View style={{ flexDirection: "row", fontSize: 10, margin: 10 }}>
               <Text>סימון רגיל</Text>

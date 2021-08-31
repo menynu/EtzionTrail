@@ -8,7 +8,6 @@ import { ScrollView } from "react-native-gesture-handler";
 export function TrailInfo({ route, navigation }) {
   const { name, info, key, imageUri, track, gallery } = route.params.item;
   const [admin, setAdmin] = React.useState(false);
-
   AsyncStorage.getItem("Admin", (err, result) => {
     console.log("is admin on?: ", result);
     if (result) {
@@ -24,7 +23,6 @@ export function TrailInfo({ route, navigation }) {
 
   return (
     <>
-      {/* <editData/> */}
       <ScrollView>
         <View>
           {admin && <Edit
@@ -42,7 +40,6 @@ export function TrailInfo({ route, navigation }) {
                               onPress={() => Linking.openURL(gallery)}>
               לגלריה ותמונות נוספות
             </Text>}
-            {/* <Button title="test" onPress={() => navigation.navigate("HomeScreen", { coords: track })}/> */}
           </View>
         </View>
       </ScrollView>

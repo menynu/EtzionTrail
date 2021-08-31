@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TextInput, View, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
+import { Text, Image, View, TouchableOpacity} from "react-native";
 import Modal from "react-native-modal";
 
 const infoModal = (props) => {
@@ -10,11 +10,9 @@ const infoModal = (props) => {
       transparent
       onBackButtonPress={() => this.setState({ infoModal: null })}
       onBackdropPress={() => this.setState({ infoModal: null })}
-      //  style={{flex: 1, justifyContent: 'flex-end', width: '100%',}}
     >
 
       <View style={styles.modalView}>
-        {/* this.props.navigation.navigate - in order to work under class */}
         <TouchableOpacity onPress={() => {
           this.props.navigation.navigate("UploadScreen", {
             marker: this.state.marker,
@@ -33,10 +31,5 @@ const infoModal = (props) => {
   );
 };
 
-// infoModal(marker){
-//     const {infoModal} = this.state;
-//     if (!infoModal) return null;     
-
-//   }
 
 export default infoModal;

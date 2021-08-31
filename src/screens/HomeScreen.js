@@ -35,9 +35,7 @@ export class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     console.log("props is", props);
-    // const { navigation, route } = this.props;
     this.state = {
-      // trailCoords:  this.props.navigation.route.params,
       locationAlert: false,
       modalVisible2: false,
       watchTrail: false,
@@ -173,7 +171,6 @@ export class HomeScreen extends React.Component {
       BackgroundGeolocation.startTask(taskKey => {
         const { coordinate, routeCoordinates, distanceTravelled } = this.state;
         const { latitude, longitude } = location;
-        // console.log('lat is:', latitude)
         const newCoordinate = {
           latitude,
           longitude
@@ -188,8 +185,8 @@ export class HomeScreen extends React.Component {
             distanceTravelled + this.calcDistance(newCoordinate),
           prevLatLng: newCoordinate
         });
-        console.log("the route is: ", this.state.routeCoordinates);
-        console.log("the distance is: ", this.state.distanceTravelled);
+        // console.log("the route is: ", this.state.routeCoordinates);
+        // console.log("the distance is: ", this.state.distanceTravelled);
         BackgroundGeolocation.endTask(taskKey);
       });
     });
@@ -204,7 +201,7 @@ export class HomeScreen extends React.Component {
       //debug: true,
       startOnBoot: false,
       stopOnTerminate: true,
-      locationProvider: BackgroundGeolocation.DISTANCE_FILTER_PROVIDER, // DISTANCE_FILTER_PROVIDER for
+      locationProvider: BackgroundGeolocation.DISTANCE_FILTER_PROVIDER, 
       interval: 10000,
       fastestInterval: 5000,
       activitiesInterval: 10000,
@@ -374,10 +371,8 @@ export class HomeScreen extends React.Component {
             onPress: () => console.log("canceled"),
             style: "cancel"
           }
-          // { text: "OK", onPress: () => console.log("OK Pressed") }
         ]
       );
-      // this.setState({locationAlert: true})
     }
     if (!this.state.locationAlert)
       return;
@@ -391,14 +386,8 @@ export class HomeScreen extends React.Component {
     }
 
 
-    console.log("bg tracking enabled");
+    // console.log("bg tracking enabled");
     this.state.playToggle ? this.setState({ playToggle: false }) : this.setState({ playToggle: true });
-    // <UseTracking parentCallback = {this.handleCallback}
-    //   latitude= {this.state.latitude}
-    //   longitude = {this.state.longitude}
-    //   region = {this.state.region}
-    //   coordinate ={this.state.coordinates}
-    // />
     BackgroundGeolocation.checkStatus(({ isRunning, locationServicesEnabled, authorization }) => {
       if (isRunning) {
         BackgroundGeolocation.stop();
@@ -522,7 +511,6 @@ export class HomeScreen extends React.Component {
         onBackdropPress={() => this.setState({ activeModal: null })}
       >
         <View style={styles.newPtModal}>
-          {/* this.props.navigation.navigate - in order to work under class */}
           <TouchableOpacity onPress={() => this.authHandler()}>
             <Text> הוסף נקודת עניין חדשה</Text>
           </TouchableOpacity>
@@ -573,7 +561,6 @@ export class HomeScreen extends React.Component {
           31.647938093268)
       });
 
-      // )
     }
 
 
@@ -595,39 +582,12 @@ export class HomeScreen extends React.Component {
 
   }
 
-//function move to current location
-  // gotToMyLocation() {
-  //   Geolocation.getCurrentPosition(
-  //     ({ coords }) => {
-  //       // console.log("curent location: ", coords)
-  //       if (this.map) {
-  //         // console.log("curent location: ", coords)
-  //         this.map.animateToRegion({
-  //           latitude: coords.latitude,
-  //           longitude: coords.longitude,
-  //           latitudeDelta: 0.005,
-  //           longitudeDelta: 0.005
-  //         });
-  //       }
-  //     }, //on error:
-  //     () => alert("Error: Are location services on?"),
-  //     { enableHighAccuracy: true }
-  //   );
-  // }
-
-
   onMarkerPress = (mapEventData, marker) => {
-    const markerID = mapEventData._targetInst.return.key;
-    console.log("marker email: ", marker.id, markerID);
-    console.log("marker: ", marker);
+    // const markerID = mapEventData._targetInst.return.key;
+    // console.log("marker email: ", marker.id, markerID);
+    // console.log("marker: ", marker);
     this.setState({ currMarker: marker });
     this.setState({ infoModal: "true", markerUrl: marker.imageUri });
-    console.log("the current marker: ", this.state.currMarker);
-    //  if (this.props.route.params)
-    //getparams
-    // console.log('route is: ', this.props.route.params.coords)
-    // const cords=this.props.route.params.coords
-    // this.setState({trailCords: cords})
   };
 
 //method to show location button
